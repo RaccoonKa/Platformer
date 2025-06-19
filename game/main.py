@@ -1,98 +1,21 @@
 import pygame
 import sys
+import random
 
-from objects import StaticObject, MovingObject, Player
+from engine.objects import StaticObject, MovingObject, Player
+from engine.render import Camera, Layer, MainSurface
+from engine.physics import PhysicEngine
+from engine.animation import  AnimationEngine
+from engine.sound import SoundEngine
 
-
-#Eсли будет не впадлу
-class Keyboard:
-    ...
-
-
-class PhysicEngine:
-    def __init__(self):
-        ...
-
-    def update(self):
-        ...
-
-
-class AnimationEngine:
-    def __init__(self):
-        ...
-
-    def update(self):
-        ...
-
-
-class SoundEngine:
-    def __init__(self):
-        ...
-
-    def update(self):
-        ...
-
-
-class Surface:
-    def __init__(self):
-        ...
-
-    def update(self):
-        ...
-
-
-class MainSurface:
-    def __init__(self):
-        self.tmp = None
-
-    def update(self):
-        ...
-
-    def get_surface(self) -> pygame.Surface:
-        return self.tmp
-
-class Camera:
-    def __init__(self, target : MovingObject, output_screen : pygame.Surface, screen_size : tuple[int,int], main_surface : MainSurface, pos : tuple[int,int] = (0,0)):
-        self.x = pos[0]
-        self.y = pos[1]
-        self.screen_size = screen_size
-        self.target = target
-        self.main_surface = main_surface
-        self.screen = output_screen
-
-    @property
-    def x(self)->float:
-        return self._x
-
-    @x.setter
-    def x(self, value : float)->None:
-        self._x = value
-
-    @property
-    def y(self) -> float:
-        return self._y
-
-    @y.setter
-    def y(self, value: float) -> None:
-        self._y = value
-
-    def update(self) -> None:
-        centre = self.target.get_centre()
-
-        self.x = centre[0] - self.screen_size[0]/2
-        self.y = centre[1] - self.screen_size[1]/2
-
-    def draw(self):
-        self.screen.fill('black')
-        self.screen.blit(self.main_surface.get_surface(),(-self.x,-self.y))
 
 def main() -> None:
     screen_size = (1920,1080)
-    fps = 60
+    max_fps = 60
 
     #Базовые настройки
     pygame.init()
-    screen = pygame.display.set_mode(size = screen_size, vsync = fps) #Разрешение
+    screen = pygame.display.set_mode(size = screen_size, vsync = max_fps) #Разрешение
     pygame.display.set_caption("Окно так называется, йоу") #Название окна
 
     icon = pygame.image.load("assets/icon.png")
@@ -102,31 +25,70 @@ def main() -> None:
     # флаги
     full_exit = False
 
-    #tmp
-    tmp = MainSurface()
-    tmp.tmp = pygame.Surface((5000,1080))
-    tmp.tmp.fill('gray')
-
-
-
     #Загрузка базовых объектов
-    player = Player((0,0),10,10,pygame.image.load("assets/character/char0.png"))
-    camera = Camera(player,screen,screen_size,tmp)
+    level_size = (5000,1080)
 
+    player = Player((0,0),10,10,pygame.image.load("assets/character/char0.png"))
+    camera = Camera(player,screen_size)
+
+    main_sf = MainSurface(level_size,screen)
+
+    #tmp background
+    bg = Layer()
+    tmp_bg = pygame.Surface(level_size)
+    tmp_bg.fill('white')
+    background = StaticObject((0,0),tmp_bg)
+    bg.objects.append(background)
+
+    #tmp
+    l1 = Layer()
+    tmp_l1 = pygame.Surface((level_size[0]-2,level_size[1]-2))
+    tmp_l1.fill('black')
+    layer1 = StaticObject((1, 1), tmp_l1)
+    l1.objects.append(layer1)
+
+    l2 = Layer()
+    l2.objects.append(player)
+
+    physics = PhysicEngine(max_fps)
+    physics.add_moving_object(player)
+
+    brick_sprite = pygame.image.load("assets/test/brick.png")
+    for i in range(100,5000,70):
+        for j in range(0,1080-35,35):
+            if random.randint(0,100) % 100 == 0:
+                brick = StaticObject((i,j),brick_sprite)
+                l2.objects.append(brick)
+                physics.add_static_object(brick)
+
+    for i in range(0,5000,70):
+        brick = StaticObject((i, 1080-35), brick_sprite)
+        l2.objects.append(brick)
+        physics.add_static_object(brick)
+
+
+    #meow
+    main_sf.layers.append(bg)
+    main_sf.layers.append(l1)
+    main_sf.layers.append(l2)
+
+    frame_cnt = 0
     #Основной цикл
     while not full_exit:
+        start_frame = clock.get_time()
+
         # Обработка клавиатуры
 
         #tmp
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_s]:
-            player.y += player.max_speed_y
         if keys[pygame.K_w]:
-            player.y -= player.max_speed_y
+            player.velocity_y = -player.max_speed_y
         if keys[pygame.K_a]:
-            player.x -= player.max_speed_x
+            player.velocity_x = -player.max_speed_x
         if keys[pygame.K_d]:
-            player.x += player.max_speed_x
+            player.velocity_x = player.max_speed_x
+        if not keys[pygame.K_a] and not keys[pygame.K_d]:
+            player.velocity_x = 0.05* player.velocity_x
 
         # какие-то взаимодействия с чем-то
 
@@ -135,22 +97,29 @@ def main() -> None:
                 full_exit = True
 
         # Работа физики
+        physics.fps = clock.get_fps()
+        physics.update()
 
         # Работа движка анимаций
 
         # Работа наложения поверхностей
-        tmp.tmp.fill('gray')
-        player.draw_on(tmp.tmp)
+        main_sf.update()
 
         # Работа камеры
         camera.update()
-        camera.draw()
-        #screen.blit(tmp.tmp,(0, 0))
 
+        main_sf.draw_by_camera(screen,camera)
 
         pygame.display.update()
 
-        clock.tick(fps)
+        end_frame = clock.get_time()
+
+        if frame_cnt == max_fps*5:
+            print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {clock.get_time()} or {end_frame - start_frame}")
+            frame_cnt = 0
+
+        frame_cnt +=1
+        clock.tick(max_fps)
 
     if full_exit:
         pygame.quit()
@@ -158,3 +127,9 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+#
+# Хитбоксы должны как-то сами следить за своими объектами. Или вообще их объединить
+# Сделать так, чтобы стоя на поверхности перс не падал вниз
+# Собственно если откреплён от поверхности, то прыгать не может
+# там чо то ещё, я забыл

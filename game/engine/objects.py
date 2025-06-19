@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame
 from dataclasses import dataclass
 
@@ -43,6 +44,15 @@ class StaticObject:
     def size(self, size : tuple[int,int]) -> None:
         self._size = size
 
+    def __int__(self) -> int:
+        return int(self.x)
+
+    def __lt__(self, other : StaticObject) -> bool:
+        return self.x < other.x
+
+    def get_pos(self) -> tuple[float,float]:
+        return self.x, self.y
+
     def load_sprite(self, sprite_filename : str):
         self.sprite = pygame.image.load(sprite_filename)
         self.size = self.sprite.get_size()
@@ -55,12 +65,13 @@ class StaticObject:
 
 
 class MovingObject(StaticObject):
-    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None):
+    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, gravitation : bool = False):
         StaticObject.__init__(self,pos, sprite)
         self.max_speed_x = speed_x
         self.max_speed_y = speed_y
         self.velocity_x = 0
         self.velocity_y = 0
+        self.is_gravitate = gravitation
 
     @property
     def max_speed_x(self) -> float:
@@ -97,7 +108,7 @@ class MovingObject(StaticObject):
 
 class Player(MovingObject):
     def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, lives_count = 5):
-        MovingObject.__init__(self,pos, speed_x, speed_y, sprite)
+        MovingObject.__init__(self, pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = True)
         self.lives = lives_count
 
     @property
