@@ -9,7 +9,7 @@ from engine.animation import  AnimationEngine
 from engine.sound import SoundEngine
 
 
-def main() -> None:
+def test() -> None:
     screen_size = (1920,1080)
     max_fps = 60
 
@@ -28,7 +28,7 @@ def main() -> None:
     #Загрузка базовых объектов
     level_size = (5000,1080)
 
-    player = Player((0,0),10,10,pygame.image.load("assets/character/char0.png"))
+    player = Player(pos = (0,0), speed_x=10*16, speed_y=20*16,sprite= pygame.image.load("assets/character/char0.png"), friction_x = 0.05, generate_hitbox = True)
     camera = Camera(player,screen_size)
 
     main_sf = MainSurface(level_size,screen)
@@ -51,21 +51,20 @@ def main() -> None:
     l2.objects.append(player)
 
     physics = PhysicEngine(max_fps)
-    physics.add_moving_object(player)
+    physics.add_stoppable_object(player)
 
     brick_sprite = pygame.image.load("assets/test/brick.png")
     for i in range(100,5000,70):
         for j in range(0,1080-35,35):
             if random.randint(0,100) % 100 == 0:
-                brick = StaticObject((i,j),brick_sprite)
+                brick = StaticObject((i,j),brick_sprite, generate_hitbox= True)
                 l2.objects.append(brick)
                 physics.add_static_object(brick)
 
     for i in range(0,5000,70):
-        brick = StaticObject((i, 1080-35), brick_sprite)
+        brick = StaticObject((i, 1080-35), brick_sprite, generate_hitbox= True)
         l2.objects.append(brick)
         physics.add_static_object(brick)
-
 
     #meow
     main_sf.layers.append(bg)
@@ -81,14 +80,20 @@ def main() -> None:
 
         #tmp
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] and player.is_grounded:
             player.velocity_y = -player.max_speed_y
         if keys[pygame.K_a]:
-            player.velocity_x = -player.max_speed_x
+            if player.is_grounded:
+                player.velocity_x = -player.max_speed_x
+            else:
+                player.velocity_x = max(player.velocity_x-0.01*player.max_speed_x,-player.max_speed_x)
         if keys[pygame.K_d]:
-            player.velocity_x = player.max_speed_x
-        if not keys[pygame.K_a] and not keys[pygame.K_d]:
-            player.velocity_x = 0.05* player.velocity_x
+            if player.is_grounded:
+                player.velocity_x =player.max_speed_x
+            else:
+                player.velocity_x = min(player.velocity_x + 0.01 * player.max_speed_x, +player.max_speed_x)
+        #if not keys[pygame.K_a] and not keys[pygame.K_d]:
+        #    player.velocity_x = 0.05* player.velocity_x
 
         # какие-то взаимодействия с чем-то
 
@@ -97,8 +102,7 @@ def main() -> None:
                 full_exit = True
 
         # Работа физики
-        physics.fps = clock.get_fps()
-        physics.update()
+        physics.update(clock.get_fps())
 
         # Работа движка анимаций
 
@@ -126,10 +130,8 @@ def main() -> None:
         sys.exit()
 
 if __name__ == "__main__":
-    main()
+    test()
 
-#
-# Хитбоксы должны как-то сами следить за своими объектами. Или вообще их объединить
-# Сделать так, чтобы стоя на поверхности перс не падал вниз
-# Собственно если откреплён от поверхности, то прыгать не может
-# там чо то ещё, я забыл
+# Сделать так, чтобы стоя на поверхности перс не падал вниз.
+# Собственно если откреплён от поверхности, то прыгать не может.
+# Сделать систему контроля прогрузки объектов. Т.е. физика, анимации просчитываются только в конкретной области.
