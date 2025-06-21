@@ -3,12 +3,13 @@ import sys
 import random
 
 from engine.objects import StaticObject, MovingObject, Player
-from engine.render import Camera, Layer, MainSurface
+from engine.render import Camera, Layer, LayerSystem, ActivityManager
 from engine.physics import PhysicEngine
 from engine.animation import  AnimationEngine
 from engine.control import InputHandler
 from engine.script_system import ScriptingSystem
-from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand
+from engine.sound import SoundEngine
+from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand, MouseButtonCommand
 from game.subsystems.scripts import MarioChaseScript
 
 
@@ -28,13 +29,17 @@ def test() -> None:
     # флаги
     full_exit = False
 
+
     #Загрузка базовых объектов
     level_size = (5000,1080)
 
     player = Player(pos = (0,0), speed_x=10*16, speed_y=20*16,sprite= pygame.image.load("assets/character/char0.png"), friction_x = 0.05, generate_hitbox = True)
     camera = Camera(player,screen_size)
 
-    main_sf = MainSurface(level_size,screen)
+    activity_manager = ActivityManager(camera, activation_distance=2500)
+
+
+    layer_system = LayerSystem(level_size, screen)
 
     #tmp background
     bg = Layer()
@@ -42,6 +47,8 @@ def test() -> None:
     tmp_bg.fill('white')
     background = StaticObject((0,0),tmp_bg)
     bg.objects.append(background)
+    activity_manager.add_object(background)
+    background.set_force_active(True)
 
     #tmp
     l1 = Layer()
@@ -49,6 +56,9 @@ def test() -> None:
     tmp_l1.fill('black')
     layer1 = StaticObject((1, 1), tmp_l1)
     l1.objects.append(layer1)
+    activity_manager.add_object(layer1)
+    activity_manager.set_force_active(layer1,True)
+
 
     l2 = Layer()
     l2.objects.append(player)
@@ -56,6 +66,8 @@ def test() -> None:
     physics = PhysicEngine(max_fps)
     physics.add_stoppable_object(player)
 
+    activity_manager.add_object(player)
+    player.set_force_active(True)
     brick_sprite = pygame.image.load("assets/test/brick.png")
     for i in range(100,5000,70):
         for j in range(0,1080-35,35):
@@ -63,39 +75,53 @@ def test() -> None:
                 brick = StaticObject((i,j),brick_sprite, generate_hitbox= True)
                 l2.objects.append(brick)
                 physics.add_static_object(brick)
+                activity_manager.add_object(brick)
 
     for i in range(0,5000,70):
         brick = StaticObject((i, 1080-35), brick_sprite, generate_hitbox= True)
         l2.objects.append(brick)
         physics.add_static_object(brick)
+        activity_manager.add_object(brick)
 
     the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=-5*16,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
     the_flying_brick.velocity_x = 25
     the_flying_brick.velocity_y = -5
     l2.objects.append(the_flying_brick)
     physics.add_unstoppable_object(the_flying_brick)
+    activity_manager.add_object(the_flying_brick)
 
     mariosprite = pygame.image.load("assets/character/mario.png")
 
     mario = MovingObject(pos=(30, 1080-70-70-70-70-35),speed_x=5*16,speed_y=20*16,sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox=None,friction_x=0.05,friction_y=0)
     l2.objects.append(mario)
     physics.add_stoppable_object(mario)
+    activity_manager.add_object(mario)
 
-    input_engine = InputHandler()
+    sound_engine = SoundEngine()
+    sound_engine.load_sound('jump',"assets/sound/jump.mp3", sound_volume=0.1)
+    sound_engine.load_music("assets/sound/town.mp3")
+    sound_engine.play_music(volume=0.3)
+
+
+    input_engine = InputHandler(camera)
     input_engine.bind_key(pygame.K_a, MoveLeftCommand(player))
     input_engine.bind_key(pygame.K_d, MoveRightCommand(player))
-    input_engine.bind_key(pygame.K_w, JumpCommand(player))
-    input_engine.bind_key(pygame.K_SPACE, JumpCommand(player))
-    input_engine.bind_mouse_button(1, MousePositionCommand(input_engine))
+    input_engine.bind_key(pygame.K_w, JumpCommand(player,sound_engine))
+    input_engine.bind_key(pygame.K_SPACE, JumpCommand(player,sound_engine))
+    input_engine.bind_mouse_button(3, MousePositionCommand(input_engine))
 
 
     script_engine = ScriptingSystem()
     script_engine.add_script(MarioChaseScript(mario,player))
+    input_engine.bind_mouse_button(1,MouseButtonCommand(input_engine,mario.hitbox))
+
+
+
 
     #meow
-    main_sf.layers.append(bg)
-    main_sf.layers.append(l1)
-    main_sf.layers.append(l2)
+    layer_system.layers.append(bg)
+    layer_system.layers.append(l1)
+    layer_system.layers.append(l2)
 
     animation_engine = AnimationEngine()
     animation_engine.add_object(player)
@@ -114,31 +140,30 @@ def test() -> None:
                 full_exit = True
             input_engine.handle_event(event)
 
-        #Возможно добавить систему учёта объектов для оптимизона
+        activity_manager.update()
 
         input_engine.update()
 
         script_engine.update(dt)
 
-        #sounds.update()
+        physics.update(dt, activity_manager)
 
-        physics.update(dt)
+        animation_engine.update(dt, activity_manager)
 
-        animation_engine.update(dt)
-
-        main_sf.update()
+        layer_system.update(activity_manager)
 
         camera.update()
-        # + => render.update()
-        main_sf.draw_by_camera(screen,camera)
+        # + => render.update()?
+        layer_system.draw_by_camera(screen,camera)
 
         pygame.display.update()
 
         #tmp
         game_time += clock.get_time()/1000
         if frame_cnt == max_fps*5:
+            print("активных объектов:",len(activity_manager.get_active_objects()))
             print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {dt}")
-            print(game_time)
+            print("game time:",game_time)
             frame_cnt = 0
         frame_cnt +=1
 

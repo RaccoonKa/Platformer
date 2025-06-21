@@ -1,5 +1,6 @@
 import pygame
 from game.engine.objects import StaticObject
+from game.engine.render import ActivityManager
 
 class AnimationContainer:
     def __init__(self):
@@ -61,8 +62,12 @@ class AnimationEngine:
         self.switch_anim(obj,'normal', to_normal=True)
 
 
-    def update(self, dt : float):
+    def update(self, dt : float, activity_manager: ActivityManager):
+        active_objects = activity_manager.get_active_objects()
+
         for obj in self.updatable_objects:
+            if obj not in active_objects:
+                continue
             container = self.containers[obj]
             container.current_delay += dt
             if container.current_id == -1:

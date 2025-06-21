@@ -39,8 +39,23 @@ class Hitbox:
                 hb1.y < hb2.y + hb2.size[1] and
                 hb1.y + hb1.size[1] > hb2.y)
 
-class StaticObject:
+
+class GameObject:
+    def __init__(self)-> None:
+        self.is_active = True
+        self.force_active = False
+
+    def set_force_active(self, force_active: bool) -> None:
+        self.force_active = force_active
+        self.is_active = force_active or self.is_active
+
+    def get_centre(self) -> tuple[float, float]:
+        raise NotImplementedError
+
+
+class StaticObject(GameObject):
     def __init__(self, pos : tuple[float,float], sprite : pygame.Surface = None, generate_hitbox : bool = False, hitbox : Hitbox = None):
+        super().__init__()
         self.x = pos[0]
         self.y = pos[1]
         self.size = (0, 0)

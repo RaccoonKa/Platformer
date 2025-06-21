@@ -1,5 +1,7 @@
 from __future__ import annotations
-from game.engine.objects import StaticObject, MovingObject, Hitbox
+from typing import Set
+from game.engine.objects import GameObject, StaticObject, MovingObject, Hitbox
+from game.engine.render import ActivityManager
 
 
 class PhysicEngine:
@@ -38,15 +40,20 @@ class PhysicEngine:
                 obj.generate_hitbox()
             self.stoppable_objects.append(obj)
 
-    def update_velocity(self,dt : float) -> None:
+    def update_velocity(self,dt : float, active_objects: Set[GameObject]) -> None:
         for obj in self.unstoppable_objects + self.stoppable_objects:
+            if obj not in active_objects:
+                continue
             if obj.is_gravitate:
                 obj.velocity_y += dt * self.g
                 if abs(obj.velocity_y) > obj.max_speed_y:
                     obj.velocity_y = obj.max_speed_y if obj.velocity_y > 0 else -obj.max_speed_y
 
-    def move_objects(self, dt : float) -> None:
+    def move_objects(self, dt : float, active_objects: Set[GameObject]) -> None:
         for obj in self.unstoppable_objects + self.stoppable_objects:
+            if obj not in active_objects:
+                continue
+
             dx = obj.velocity_x * dt
             dy = obj.velocity_y * dt
 
@@ -69,14 +76,18 @@ class PhysicEngine:
                 hb1.y < hb2.y + hb2.size[1] and
                 hb1.y + hb1.size[1] > hb2.y)
 
-    def process_collisions(self, old_positions: dict[MovingObject: tuple[float,float,float,float]]) -> None:
-        for obj1 in self.stoppable_objects:
+    def process_collisions(self, old_positions: dict[MovingObject: tuple[float,float,float,float]], active_objects: Set[GameObject]) -> None:
+        active_static = [obj for obj in self.static_objects if obj in active_objects]
+        active_unstoppable = [obj for obj in self.unstoppable_objects if obj in active_objects]
+        active_stoppable = [obj for obj in self.stoppable_objects if obj in active_objects]
+
+        for obj1 in active_stoppable:
             obj1.is_grounded = False
-            for obj2 in self.static_objects:
+            for obj2 in active_static:
                 PhysicEngine.collide_stop_to_stat(obj1, obj2)
-            for obj2 in self.unstoppable_objects:
+            for obj2 in active_unstoppable:
                 PhysicEngine.collide_stop_to_unstop(obj1,obj2,old_positions)
-            for obj2 in self.stoppable_objects:
+            for obj2 in active_stoppable:
                 PhysicEngine.collide_stop_to_stop(obj1, obj2)
 
     @staticmethod
@@ -223,16 +234,20 @@ class PhysicEngine:
         obj2.hitbox.y = obj2.y
 
 
-    def update(self, dt : float) -> None:
+    def update(self, dt : float, activity_manager: ActivityManager) -> None:
         if dt == 0:
             return
 
+        active_objects = activity_manager.get_active_objects()
         old_positions = {}
+
         for obj in self.unstoppable_objects + self.stoppable_objects:
+            if obj not in active_objects:
+                continue
             old_positions[obj] = (obj.x, obj.y, obj.hitbox.x, obj.hitbox.y)
 
-        self.update_velocity(dt)
+        self.update_velocity(dt, active_objects)
 
-        self.move_objects(dt)
+        self.move_objects(dt, active_objects)
 
-        self.process_collisions(old_positions)
+        self.process_collisions(old_positions, active_objects)

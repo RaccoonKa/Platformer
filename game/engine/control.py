@@ -1,6 +1,6 @@
 import pygame
 from abc import ABC, abstractmethod
-
+from game.engine.render import Camera
 
 class Command(ABC):
     @abstractmethod
@@ -9,13 +9,13 @@ class Command(ABC):
 
 
 class InputHandler:
-
-    def __init__(self):
+    def __init__(self, camera : Camera):
         self.key_bindings = {}
         self.mouse_bindings = {}
         self.key_states = {}
         self.mouse_states = {}
         self.mouse_position = (0, 0)
+        self.camera = camera
 
     def bind_key(self, key: int, command: Command) -> None:
         self.key_bindings[key] = command
@@ -45,3 +45,6 @@ class InputHandler:
         for button, command in self.mouse_bindings.items():
             if self.mouse_states.get(button, False):
                 command.execute()
+
+    def get_mouse_position(self) -> tuple[float,float]:
+        return self.mouse_position[0]+self.camera.x, self.mouse_position[1] + self.camera.y

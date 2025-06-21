@@ -1,5 +1,6 @@
 import pygame
-from game.engine.objects import StaticObject, MovingObject
+from typing import List, Set
+from game.engine.objects import GameObject, StaticObject, MovingObject
 
 # Отвечает за камеру; как будто нужно сделать cum zone
 class Camera:
@@ -33,6 +34,54 @@ class Camera:
         self.x = centre[0] - self.screen_size[0]/2
         self.y = centre[1] - self.screen_size[1]/2
 
+class ActivityManager:
+    def __init__(self, camera: Camera, activation_distance: float = 2000) -> None:
+        self.camera = camera
+        self.activation_distance = activation_distance
+        self.objects: List[GameObject] = []
+        self.force_active_objects: Set[GameObject] = set()
+        self.active_objects: Set[GameObject] = set()
+
+    def add_object(self, obj: 'GameObject') -> None:
+        if obj not in self.objects:
+            self.objects.append(obj)
+            self.active_objects.add(obj)
+
+    def remove_object(self, obj: 'GameObject') -> None:
+        if obj in self.objects:
+            self.objects.remove(obj)
+        if obj in self.active_objects:
+            self.active_objects.remove(obj)
+        if obj in self.force_active_objects:
+            self.force_active_objects.remove(obj)
+
+    def set_force_active(self, obj: 'GameObject', force_active: bool = True) -> None:
+        if force_active:
+            self.force_active_objects.add(obj)
+            self.active_objects.add(obj)
+        elif obj in self.force_active_objects:
+            self.force_active_objects.remove(obj)
+
+    def update(self) -> None:
+        cam_x = self.camera.x + self.camera.screen_size[0] / 2
+        cam_y = self.camera.y + self.camera.screen_size[1] / 2
+
+        for obj in self.objects:
+            if obj in self.force_active_objects:
+                continue
+
+            obj_center = obj.get_centre()
+            distance = ((obj_center[0] - cam_x) ** 2 +
+                        (obj_center[1] - cam_y) ** 2) ** 0.5
+
+            if distance <= self.activation_distance:
+                self.active_objects.add(obj)
+            elif obj in self.active_objects:
+                self.active_objects.remove(obj)
+
+    def get_active_objects(self) -> Set['GameObject']:
+        return self.active_objects
+
 class Layer:
     def __init__(self):
         self.objects : list[StaticObject] = []
@@ -40,7 +89,7 @@ class Layer:
     def update(self):
         ...
 
-class MainSurface:
+class LayerSystem:
     def __init__(self, size : tuple[int, int], screen : pygame.Surface):
         self.size = size
         self.layers : list[Layer] = []
@@ -56,12 +105,16 @@ class MainSurface:
     def size(self, size : tuple[int,int]) -> None:
         self._size = size
 
-    def update(self):
+    def update(self, activity_manager: ActivityManager) -> None:
+        active_objects = activity_manager.get_active_objects()
+
         for layer in self.layers:
-            #layer.update()
             for obj in layer.objects:
+                if obj not in active_objects:
+                    continue
                 self.main_surface.blit(obj.sprite,(obj.x,obj.y))
 
     def draw_by_camera(self,output_screen : pygame.surface.Surface, camera : Camera):
         output_screen.fill('black')
         output_screen.blit(self.main_surface,(-camera.x,-camera.y))
+
