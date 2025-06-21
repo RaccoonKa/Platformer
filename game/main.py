@@ -66,13 +66,29 @@ def test() -> None:
         l2.objects.append(brick)
         physics.add_static_object(brick)
 
+    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=0,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
+    the_flying_brick.velocity_x = 25
+    l2.objects.append(the_flying_brick)
+    physics.add_unstoppable_object(the_flying_brick)
+
+    mariosprite = pygame.image.load("assets/character/mario.png")
+    mario = MovingObject(pos=(30, 1080-70-70-70-70-35),speed_x=5*16,speed_y=0,sprite=mariosprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0.5,friction_y=0)
+    l2.objects.append(mario)
+    physics.add_stoppable_object(mario)
+
     #meow
     main_sf.layers.append(bg)
     main_sf.layers.append(l1)
     main_sf.layers.append(l2)
 
+    animation_engine = AnimationEngine()
+    animation_engine.add_object(player)#,pygame.image.load('assets/character/char0.png'))
+    animation_engine.add_anim(player,'rotate',1,[pygame.image.load('assets/character/char0.png'),pygame.image.load('assets/character/char1.png')])
+    animation_engine.switch_anim(player,'rotate')
+    animation_engine.turn_on(player)
     frame_cnt = 0
     #Основной цикл
+    game_time = 0
     while not full_exit:
         start_frame = clock.get_time()
 
@@ -105,6 +121,7 @@ def test() -> None:
         physics.update(clock.get_fps())
 
         # Работа движка анимаций
+        animation_engine.update(clock.get_fps())
 
         # Работа наложения поверхностей
         main_sf.update()
@@ -117,13 +134,15 @@ def test() -> None:
         pygame.display.update()
 
         end_frame = clock.get_time()
-
+        game_time += clock.get_time()/1000
         if frame_cnt == max_fps*5:
             print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {clock.get_time()} or {end_frame - start_frame}")
+            print(game_time)
             frame_cnt = 0
 
         frame_cnt +=1
         clock.tick(max_fps)
+
 
     if full_exit:
         pygame.quit()
@@ -132,6 +151,4 @@ def test() -> None:
 if __name__ == "__main__":
     test()
 
-# Сделать так, чтобы стоя на поверхности перс не падал вниз.
-# Собственно если откреплён от поверхности, то прыгать не может.
 # Сделать систему контроля прогрузки объектов. Т.е. физика, анимации просчитываются только в конкретной области.
