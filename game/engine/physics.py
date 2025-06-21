@@ -61,6 +61,9 @@ class PhysicEngine:
 
     @staticmethod
     def collide_detect(hb1: Hitbox, hb2: Hitbox) -> bool:
+        if not hb1 or not hb2:
+            return False
+
         return (hb1.x < hb2.x + hb2.size[0] and
                 hb1.x + hb1.size[0] > hb2.x and
                 hb1.y < hb2.y + hb2.size[1] and
@@ -220,11 +223,9 @@ class PhysicEngine:
         obj2.hitbox.y = obj2.y
 
 
-    def update(self, fps : float) -> None:
-        if fps == 0:
+    def update(self, dt : float) -> None:
+        if dt == 0:
             return
-        self.fps = fps
-        dt = 1 / self.fps
 
         old_positions = {}
         for obj in self.unstoppable_objects + self.stoppable_objects:

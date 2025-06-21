@@ -61,10 +61,7 @@ class AnimationEngine:
         self.switch_anim(obj,'normal', to_normal=True)
 
 
-    def update(self, fps : float):
-        if fps == 0:
-            return
-        dt = 1 / fps
+    def update(self, dt : float):
         for obj in self.updatable_objects:
             container = self.containers[obj]
             container.current_delay += dt

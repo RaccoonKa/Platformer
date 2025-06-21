@@ -6,7 +6,10 @@ from engine.objects import StaticObject, MovingObject, Player
 from engine.render import Camera, Layer, MainSurface
 from engine.physics import PhysicEngine
 from engine.animation import  AnimationEngine
-from engine.sound import SoundEngine
+from engine.control import InputHandler
+from engine.script_system import ScriptingSystem
+from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand
+from game.subsystems.scripts import MarioChaseScript
 
 
 def test() -> None:
@@ -66,15 +69,28 @@ def test() -> None:
         l2.objects.append(brick)
         physics.add_static_object(brick)
 
-    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=0,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
+    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=-5*16,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
     the_flying_brick.velocity_x = 25
+    the_flying_brick.velocity_y = -5
     l2.objects.append(the_flying_brick)
     physics.add_unstoppable_object(the_flying_brick)
 
     mariosprite = pygame.image.load("assets/character/mario.png")
-    mario = MovingObject(pos=(30, 1080-70-70-70-70-35),speed_x=5*16,speed_y=0,sprite=mariosprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0.5,friction_y=0)
+
+    mario = MovingObject(pos=(30, 1080-70-70-70-70-35),speed_x=5*16,speed_y=20*16,sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox=None,friction_x=0.05,friction_y=0)
     l2.objects.append(mario)
     physics.add_stoppable_object(mario)
+
+    input_engine = InputHandler()
+    input_engine.bind_key(pygame.K_a, MoveLeftCommand(player))
+    input_engine.bind_key(pygame.K_d, MoveRightCommand(player))
+    input_engine.bind_key(pygame.K_w, JumpCommand(player))
+    input_engine.bind_key(pygame.K_SPACE, JumpCommand(player))
+    input_engine.bind_mouse_button(1, MousePositionCommand(input_engine))
+
+
+    script_engine = ScriptingSystem()
+    script_engine.add_script(MarioChaseScript(mario,player))
 
     #meow
     main_sf.layers.append(bg)
@@ -82,7 +98,7 @@ def test() -> None:
     main_sf.layers.append(l2)
 
     animation_engine = AnimationEngine()
-    animation_engine.add_object(player)#,pygame.image.load('assets/character/char0.png'))
+    animation_engine.add_object(player)
     animation_engine.add_anim(player,'rotate',1,[pygame.image.load('assets/character/char0.png'),pygame.image.load('assets/character/char1.png')])
     animation_engine.switch_anim(player,'rotate')
     animation_engine.turn_on(player)
@@ -90,58 +106,43 @@ def test() -> None:
     #Основной цикл
     game_time = 0
     while not full_exit:
-        start_frame = clock.get_time()
-
-        # Обработка клавиатуры
-
-        #tmp
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w] and player.is_grounded:
-            player.velocity_y = -player.max_speed_y
-        if keys[pygame.K_a]:
-            if player.is_grounded:
-                player.velocity_x = -player.max_speed_x
-            else:
-                player.velocity_x = max(player.velocity_x-0.01*player.max_speed_x,-player.max_speed_x)
-        if keys[pygame.K_d]:
-            if player.is_grounded:
-                player.velocity_x =player.max_speed_x
-            else:
-                player.velocity_x = min(player.velocity_x + 0.01 * player.max_speed_x, +player.max_speed_x)
-        #if not keys[pygame.K_a] and not keys[pygame.K_d]:
-        #    player.velocity_x = 0.05* player.velocity_x
-
-        # какие-то взаимодействия с чем-то
+        fps = clock.get_fps()
+        dt = 1/fps if fps != 0 else 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 full_exit = True
+            input_engine.handle_event(event)
 
-        # Работа физики
-        physics.update(clock.get_fps())
+        #Возможно добавить систему учёта объектов для оптимизона
 
-        # Работа движка анимаций
-        animation_engine.update(clock.get_fps())
+        input_engine.update()
 
-        # Работа наложения поверхностей
+        script_engine.update(dt)
+
+        #sounds.update()
+
+        physics.update(dt)
+
+        animation_engine.update(dt)
+
         main_sf.update()
 
-        # Работа камеры
         camera.update()
-
+        # + => render.update()
         main_sf.draw_by_camera(screen,camera)
 
         pygame.display.update()
 
-        end_frame = clock.get_time()
+        #tmp
         game_time += clock.get_time()/1000
         if frame_cnt == max_fps*5:
-            print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {clock.get_time()} or {end_frame - start_frame}")
+            print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {dt}")
             print(game_time)
             frame_cnt = 0
-
         frame_cnt +=1
-        clock.tick(max_fps)
+
+        clock.tick_busy_loop(max_fps)
 
 
     if full_exit:

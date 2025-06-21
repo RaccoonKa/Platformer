@@ -29,6 +29,16 @@ class Hitbox:
     def y(self, value: float) -> None:
         self._y = value
 
+    @staticmethod
+    def collide_detect(hb1: Hitbox, hb2: Hitbox) -> bool:
+        if not hb1 or not hb2:
+            return False
+
+        return (hb1.x < hb2.x + hb2.size[0] and
+                hb1.x + hb1.size[0] > hb2.x and
+                hb1.y < hb2.y + hb2.size[1] and
+                hb1.y + hb1.size[1] > hb2.y)
+
 class StaticObject:
     def __init__(self, pos : tuple[float,float], sprite : pygame.Surface = None, generate_hitbox : bool = False, hitbox : Hitbox = None):
         self.x = pos[0]
