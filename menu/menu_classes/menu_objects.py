@@ -24,7 +24,7 @@ class Objects:
         for obj in self.objects:
             obj.draw(surface)
 
-    def handle_event(self, event, game_pos):
+    def handle_event(self, event, game_pos, sound_volume=1.0):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for obj in reversed(self.objects):
                 if obj.is_clicked(game_pos):
@@ -32,17 +32,20 @@ class Objects:
                         self.special_counter += 1
                         if self.special_counter >= 6:
                             if self.special_sound:
+                                self.special_sound.set_volume(sound_volume)
                                 self.special_sound.play()
                             self.special_counter = 0
                             return
+                    if obj.sound:
+                        obj.sound.set_volume(sound_volume)
                     obj.play_sound()
                     return
 
 
 # Methods for objects
 class InteractiveObject:
-    def __init__(self, x, y, image = None, shape = None, width = 100, height = 100,
-                 color = (0, 0, 0), alpha = 0, angle = 0, sound_path = None):
+    def __init__(self, x, y, image=None, shape=None, width=100, height=100,
+                 color=(0, 0, 0), alpha=0, angle=0, sound_path=None):
         self.x = x
         self.y = y
         self.width = width
@@ -57,6 +60,13 @@ class InteractiveObject:
         self.rect = None
         self.mask = None
         self.is_active = True
+        self.sound_path = sound_path
+
+        if sound_path:
+            try:
+                self.sound = pygame.mixer.Sound(sound_path)
+            except pygame.error as e:
+                print(f"Error loading sound: {e}")
 
         if image:
             self.original_image = image.convert_alpha()
@@ -161,6 +171,13 @@ class InteractiveObject:
         return False
 
     def play_sound(self):
+        if self.sound is None and self.sound_path:
+            try:
+                self.sound = pygame.mixer.Sound(self.sound_path)
+            except pygame.error as e:
+                print(f"Error loading sound: {e}")
+                return
+
         if self.sound and self.is_active:
             self.sound.play()
 

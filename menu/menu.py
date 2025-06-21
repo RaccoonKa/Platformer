@@ -1,5 +1,5 @@
 import pygame
-from menu_classes.menu_objects import (Objects, InteractiveObject, Text, MenuItem)
+from menu_classes.menu_objects import (Objects, Text, MenuItem)
 from menu_classes.menu_background import DynamicBackgroundManager
 from menu_classes.menu_animations import FadeAnimation
 from menu_classes.menu_music import (Music, Slider)
@@ -19,19 +19,19 @@ game_surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
 animator = FadeAnimation(screen)
 intro = pygame.image.load("assets(menu)/pictures/intro/intro.png").convert_alpha()
 intro = pygame.transform.scale(intro, (600, 600))
-animator.fade_in(intro, duration = 3)
+animator.fade_in(intro, duration = 4)
 pygame.time.delay(3000)
-animator.fade_out(intro, duration = 3)
+animator.fade_out(intro, duration = 4)
 
 
 # Background
 background_manager = DynamicBackgroundManager(
     screen,
-    folder_path="assets(menu)/pictures/background",
-    prefix="bg",
-    start=0,
-    end=38,
-    change_interval=0.6
+    folder_path = "assets(menu)/pictures/background",
+    prefix = "bg",
+    start = 0,
+    end = 38,
+    change_interval = 0.6
 )
 background_manager.start()
 
@@ -43,58 +43,103 @@ music.play_loop()
 
 # Create Game Menu
 title = Text(
+    text = "THE FOG",
+    position = (GAME_WIDTH//2.85 - 25, 250),
     font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
     font_size = 80,
-    text = "THE FOG",
     color = (255, 255, 255),
-    position = (GAME_WIDTH//2.85 - 25, 250),
     alpha = 255,
 )
 press_any_button = Text(
+    text = "press any button",
+    position = (GAME_WIDTH//2.8, 420),
     font_path = "assets(menu)/fonts/GNF/GNF.ttf",
     font_size = 30,
-    text = "press any button",
     color = (255, 255, 255),
-    position = (GAME_WIDTH//2.8, 420),
     alpha = 255,
 )
 
 menu_items = [
     MenuItem(
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45,
-        text = "Start",
+        text="Start",
         position = (GAME_WIDTH//2.5 - 10, GAME_HEIGHT//5.2),
+        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_size = 45
     ),
     MenuItem(
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45,
         text = "Settings",
         position = (GAME_WIDTH//2.5 - 42, GAME_HEIGHT//3.9),
+        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_size = 45
     ),
     MenuItem(
+        text="Authors",
+        position = (GAME_WIDTH//2.5 - 40, GAME_HEIGHT//3.13),
         font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45,
-        text = "Control",
-        position = (GAME_WIDTH//2.5 - 33, GAME_HEIGHT//3.13),
+        font_size = 45
     ),
     MenuItem(
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45,
         text = "Exit",
-        position = (GAME_WIDTH//2.5 + 5, GAME_HEIGHT//2.6),
+        position=(GAME_WIDTH // 2.5 + 5, GAME_HEIGHT // 2.6),
+        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_size = 45
     )
 ]
+# Settings
+settings_title = Text(
+    text = "SETTINGS",
+    position = (GAME_WIDTH//1.7 - 10, GAME_HEIGHT//15),
+    font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
+    font_size = 50
+)
+music_slider = Slider(
+    x = GAME_WIDTH//1.7 + 15,
+    y = GAME_HEIGHT//6,
+    width = 200,
+    height = 10,
+    min_val = 0.0,
+    max_val = 1.0,
+    initial_val = music.volume,
+    label = "Music",
+    font_path="assets(menu)/fonts/GNF/GNF.ttf",
+    font_size = 25
+)
+sound_slider = Slider(
+    x = GAME_WIDTH//1.7 + 15,
+    y = GAME_HEIGHT//4,
+    width = 200,
+    height = 10,
+    min_val = 0.0,
+    max_val = 1.0,
+    initial_val = 0.5,
+    label = "Sound",
+    font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+    font_size = 25
+)
+back_button = MenuItem(
+    text = "Back",
+    position = (GAME_WIDTH//1.5, GAME_HEIGHT//2.7),
+    font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+    font_size = 35,
+    text_color = (255, 255, 255),
+    bg_color = (50, 50, 150, 180),
+    bg_padding = 10
+)
+
+
 text_alpha = 0
 text_target_alpha = 255
 text_fade_speed = 2
-fade_out_speed = 3
+fade_out_speed = 2
 menu_alpha = 0
 menu_fade_speed = 5
 objects_manager = Objects()
 setup_secrets(objects_manager, GAME_WIDTH, GAME_HEIGHT)
-select_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/switch.mp3")
-activate_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/select.mp3")
+sound_volume = 0.5
+switch_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/switch.mp3")
+switch_sound.set_volume(sound_volume)
+select_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/select.mp3")
+select_sound.set_volume(sound_volume)
 
 
 # Launch
@@ -106,7 +151,11 @@ show_text = True
 menu_active = False
 menu_visible = False
 key_pressed = False
+settings_active = False
 selected_index = 0
+settings_alpha = 0
+current_state = "main_menu"
+selected_setting_index = 0
 
 while running:
     for event in pygame.event.get():
@@ -115,62 +164,142 @@ while running:
             music.stop()
             background_manager.stop()
 
-        # Processing of pressing any key (except the mouse)
-        if event.type == pygame.KEYDOWN and show_text:
-            show_text = False
-            menu_visible = True
-            selected_index = 0
+        # Handling mouse release
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            music_slider.dragging = False
+            sound_slider.dragging = False
 
-        # Handling menu navigation
-        if event.type == pygame.KEYDOWN and menu_active:
-            if event.key == pygame.K_w or event.key == pygame.K_UP:
-                selected_index = (selected_index - 1) % len(menu_items)
-                if select_sound: select_sound.play()
-            elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                selected_index = (selected_index + 1) % len(menu_items)
-                if select_sound: select_sound.play()
-            elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                if activate_sound: activate_sound.play()
-                if selected_index == 0:
-                    print("Start button")
-                elif selected_index == 1:
-                    print("Settings button")
-                elif selected_index == 2:
-                    print("Control button")
-                elif selected_index == 3:
-                    running = False
+        if current_state == "main_menu":
+            if event.type == pygame.KEYDOWN and show_text:
+                show_text = False
+                menu_visible = True
+                selected_index = 0
 
-        # Mouse Processing
-        if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
-            game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
-            objects_manager.handle_event(event, (game_x, game_y))
+            # Menu navigation
+            if event.type == pygame.KEYDOWN and menu_active:
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    selected_index = (selected_index - 1) % len(menu_items)
+                    if switch_sound: switch_sound.play()
+                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    selected_index = (selected_index + 1) % len(menu_items)
+                    if switch_sound: switch_sound.play()
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                    if select_sound: select_sound.play()
+                    if selected_index == 0:
+                        print("Start button")
+                    elif selected_index == 1:
+                        current_state = "settings"
+                        settings_active = True
+                        selected_setting_index = 0
+                    elif selected_index == 2:
+                        print("Author button")
+                    elif selected_index == 3:
+                        running = False
 
-            # Selecting a menu item with the mouse
-            if menu_active:
+            # Mouse Processing
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
+                game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
+                objects_manager.handle_event(event, (game_x, game_y), sound_volume)
+
+                # Selecting a menu item
+                if menu_active:
+                    if event.type == pygame.MOUSEMOTION:
+                        for i, item in enumerate(menu_items):
+                            if item.bg_rect.collidepoint(game_x, game_y):
+                                if i != selected_index and switch_sound:
+                                    switch_sound.play()
+                                selected_index = i
+                                break
+
+                    # Activating menu items
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        for i, item in enumerate(menu_items):
+                            if item.bg_rect.collidepoint(game_x, game_y):
+                                if select_sound: select_sound.play()
+                                if i == 0:
+                                    print("Start button")
+                                elif i == 1:
+                                    current_state = "settings"
+                                    selected_setting_index = 0
+                                    settings_active = True
+                                elif i == 2:
+                                    print("Author button")
+                                elif i == 3:
+                                    running = False
+                                break
+
+        # Event handling in settings
+        if current_state == "settings":
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
+                game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
+
+                # Updating the selected item on hover
                 if event.type == pygame.MOUSEMOTION:
-                    for i, item in enumerate(menu_items):
-                        if item.bg_rect.collidepoint(game_x, game_y):
-                            if i != selected_index and select_sound:
-                                select_sound.play()
-                            selected_index = i
-                            break
+                    if music_slider.rect.collidepoint(game_x, game_y) or \
+                            pygame.Rect(music_slider.rect.x, music_slider.rect.y - 40,
+                                        music_slider.rect.width, 40).collidepoint(game_x, game_y):
+                        selected_setting_index = 0
+                    elif sound_slider.rect.collidepoint(game_x, game_y) or \
+                            pygame.Rect(sound_slider.rect.x, sound_slider.rect.y - 40,
+                                        sound_slider.rect.width, 40).collidepoint(game_x, game_y):
+                        selected_setting_index = 1
+                    elif back_button.bg_rect.collidepoint(game_x, game_y):
+                        selected_setting_index = 2
 
-                # Processing a mouse click to activate items
+                # Slider processing
+                music_slider.handle_event(event, (game_x, game_y))
+                sound_slider.handle_event(event, (game_x, game_y))
+
+                # "Back" processing
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    for i, item in enumerate(menu_items):
-                        if item.bg_rect.collidepoint(game_x, game_y):
-                            if activate_sound: activate_sound.play()
-                            if i == 0:  # Start
-                                print("Starting game...")
-                            elif i == 1:  # Settings
-                                print("Opening settings...")
-                            elif i == 2:  # Authors
-                                print("Showing authors...")
-                            elif i == 3:  # Exit
-                                running = False
-                            break
+                    if back_button.bg_rect.collidepoint(game_x, game_y):
+                        if select_sound: select_sound.play()
+                        current_state = "main_menu"
+                        settings_active = False
+
+            # Keyboard handling in settings
+            if event.type == pygame.KEYDOWN:
+                if event.key in [pygame.K_w, pygame.K_UP]:
+                    selected_setting_index = (selected_setting_index - 1) % 3
+                    if switch_sound: switch_sound.play()
+                elif event.key in [pygame.K_s, pygame.K_DOWN]:
+                    selected_setting_index = (selected_setting_index + 1) % 3
+                    if switch_sound: switch_sound.play()
+                elif event.key in [pygame.K_a, pygame.K_LEFT]:
+                    if selected_setting_index == 0:
+                        new_val = max(0.0, music_slider.val - 0.05)
+                        music_slider.val = new_val
+                        music_slider.knob_x = music_slider.rect.left + (new_val - music_slider.min_val) / (
+                                music_slider.max_val - music_slider.min_val) * music_slider.rect.width
+                        if switch_sound: switch_sound.play()
+                    elif selected_setting_index == 1:
+                        new_val = max(0.0, sound_slider.val - 0.05)
+                        sound_slider.val = new_val
+                        sound_slider.knob_x = sound_slider.rect.left + (new_val - sound_slider.min_val) / (
+                                sound_slider.max_val - sound_slider.min_val) * sound_slider.rect.width
+                        if switch_sound: switch_sound.play()
+                elif event.key in [pygame.K_d, pygame.K_RIGHT]:
+                    if selected_setting_index == 0:
+                        new_val = min(1.0, music_slider.val + 0.05)
+                        music_slider.val = new_val
+                        music_slider.knob_x = music_slider.rect.left + (new_val - music_slider.min_val) / (
+                                music_slider.max_val - music_slider.min_val) * music_slider.rect.width
+                        if switch_sound: switch_sound.play()
+                    elif selected_setting_index == 1:
+                        new_val = min(1.0, sound_slider.val + 0.05)
+                        sound_slider.val = new_val
+                        sound_slider.knob_x = sound_slider.rect.left + (new_val - sound_slider.min_val) / (
+                                sound_slider.max_val - sound_slider.min_val) * sound_slider.rect.width
+                        if switch_sound: switch_sound.play()
+                elif event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                    if selected_setting_index == 2:
+                        if select_sound: select_sound.play()
+                        current_state = "main_menu"
+                        settings_active = False
 
     # Drawing
     current_bg = background_manager.get_current_background()
@@ -188,8 +317,6 @@ while running:
             text_alpha = max(0, text_alpha - text_fade_speed)
             title.set_alpha(text_alpha)
             press_any_button.set_alpha(text_alpha)
-
-
         elif menu_visible and menu_alpha < 255:
             menu_alpha = min(menu_alpha + menu_fade_speed, 255)
             if menu_alpha == 255:
@@ -200,10 +327,40 @@ while running:
         press_any_button.draw(game_surface)
 
     if menu_alpha > 0:
+        highlight_active = current_state == "main_menu"
+
         for i, item in enumerate(menu_items):
             item.set_alpha(menu_alpha)
-            item.set_active(i == selected_index)
+            item.set_active(i == selected_index and highlight_active)
             item.draw(game_surface)
+
+    if current_state == "settings":
+        if settings_alpha < 255:
+            settings_alpha = min(settings_alpha + 5, 255)
+    else:
+        if settings_alpha > 0:
+            settings_alpha = max(settings_alpha - 5, 0)
+
+    if current_state == "settings":
+        music.set_volume(music_slider.get_value())
+        sound_volume = sound_slider.get_value()
+        switch_sound.set_volume(sound_volume)
+        select_sound.set_volume(sound_volume)
+
+    if current_state == "settings":
+        music_slider.set_active(selected_setting_index == 0)
+        sound_slider.set_active(selected_setting_index == 1)
+        back_button.set_active(selected_setting_index == 2)
+
+    if settings_alpha > 0:
+        settings_title.set_alpha(settings_alpha)
+        settings_title.draw(game_surface)
+        music_slider.set_alpha(settings_alpha)
+        music_slider.draw(game_surface)
+        sound_slider.set_alpha(settings_alpha)
+        sound_slider.draw(game_surface)
+        back_button.set_alpha(settings_alpha)
+        back_button.draw(game_surface)
 
     objects_manager.draw(game_surface)
     scaled_surface = pygame.transform.scale(game_surface, (SCREEN_WIDTH, SCREEN_HEIGHT))

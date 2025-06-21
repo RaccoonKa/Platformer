@@ -45,31 +45,53 @@ class Music:
 
 # Slider music
 class Slider:
-    def __init__(self, x, y, width, height, min_val, max_val, initial_val, label):
+    def __init__(self, x, y, width, height, min_val, max_val, initial_val, label,
+                 font_path=None, font_size=36, font_color=(255, 255, 255)):
         self.rect = pygame.Rect(x, y, width, height)
-        self.knob_radius = height * 1.5
+        self.knob_radius = int(height * 1.5)
         self.min_val = min_val
         self.max_val = max_val
         self.val = initial_val
         self.label = label
         self.dragging = False
         self.knob_x = x + (initial_val - min_val) / (max_val - min_val) * width
-        self.font = pygame.font.Font(None, 36)
+        self.alpha = 255
+        self.active = False
+
+        try:
+            if font_path:
+                self.font = pygame.font.Font(font_path, font_size)
+            else:
+                self.font = pygame.font.Font(None, font_size)
+        except:
+            self.font = pygame.font.Font(None, font_size)
+
+    def set_alpha(self, alpha):
+        self.alpha = alpha
+
+    def set_active(self, active):
+        self.active = active
 
     def draw(self, surface):
-        pygame.draw.rect(surface, (100, 100, 100), self.rect)
-        pygame.draw.rect(surface, (200, 200, 200),
-                         (self.rect.x, self.rect.y,
-                          self.knob_x - self.rect.x,
-                          self.rect.height))
-        pygame.draw.circle(surface, (150, 150, 150),
-                           (int(self.knob_x), self.rect.centery),
-                           int(self.knob_radius))
-        pygame.draw.circle(surface, (200, 200, 200),
-                           (int(self.knob_x), self.rect.centery),
-                           int(self.knob_radius - 2))
-        text = self.font.render(f"{self.label}: {self.val:.0%}", True, (255, 255, 255))
-        surface.blit(text, (self.rect.x, self.rect.y - 40))
+        text_surface = self.font.render(f"{self.label}: {self.val:.0%}", True, (255, 255, 255))
+        text_surface.set_alpha(self.alpha)
+        surface.blit(text_surface, (self.rect.x, self.rect.y - 40))
+        bg_surf = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+        bg_surf.fill((100, 100, 200, int(220 * (self.alpha / 255))))
+        surface.blit(bg_surf, self.rect)
+        fill_width = max(0, self.knob_x - self.rect.left)
+        if fill_width > 0:
+            fill_surf = pygame.Surface((fill_width, self.rect.height), pygame.SRCALPHA)
+            fill_surf.fill((100, 100, 200, int(220 * (self.alpha / 255))))
+            surface.blit(fill_surf, self.rect)
+        knob_surface = pygame.Surface((2 * self.knob_radius, 2 * self.knob_radius), pygame.SRCALPHA)
+        pygame.draw.circle(knob_surface, (150, 150, 150, self.alpha),
+                           (self.knob_radius, self.knob_radius), self.knob_radius)
+        inner_color = (255, 77, 0) if self.active else (200, 200, 200)
+        pygame.draw.circle(knob_surface, (*inner_color, self.alpha),
+                           (self.knob_radius, self.knob_radius), self.knob_radius - 2)
+        circle_pos = (self.knob_x - self.knob_radius, self.rect.centery - self.knob_radius)
+        surface.blit(knob_surface, circle_pos)
 
     def handle_event(self, event, game_pos):
         if event.type == pygame.MOUSEBUTTONDOWN:
