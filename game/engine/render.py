@@ -9,8 +9,6 @@ class Camera:
         self.y = pos[1]
         self.screen_size = screen_size
         self.target = target
-        #self.main_surface = main_surface
-        #self.screen = output_screen
 
     @property
     def x(self)->float:
@@ -42,12 +40,12 @@ class ActivityManager:
         self.force_active_objects: Set[GameObject] = set()
         self.active_objects: Set[GameObject] = set()
 
-    def add_object(self, obj: 'GameObject') -> None:
+    def add_object(self, obj: GameObject) -> None:
         if obj not in self.objects:
             self.objects.append(obj)
             self.active_objects.add(obj)
 
-    def remove_object(self, obj: 'GameObject') -> None:
+    def remove_object(self, obj: GameObject) -> None:
         if obj in self.objects:
             self.objects.remove(obj)
         if obj in self.active_objects:
@@ -55,7 +53,7 @@ class ActivityManager:
         if obj in self.force_active_objects:
             self.force_active_objects.remove(obj)
 
-    def set_force_active(self, obj: 'GameObject', force_active: bool = True) -> None:
+    def set_force_active(self, obj: GameObject, force_active: bool = True) -> None:
         if force_active:
             self.force_active_objects.add(obj)
             self.active_objects.add(obj)
@@ -71,23 +69,22 @@ class ActivityManager:
                 continue
 
             obj_center = obj.get_centre()
-            distance = ((obj_center[0] - cam_x) ** 2 +
-                        (obj_center[1] - cam_y) ** 2) ** 0.5
-
-            if distance <= self.activation_distance:
+            if obj_center[0] - cam_x < self.activation_distance and obj_center[1] - cam_y < self.activation_distance:
                 self.active_objects.add(obj)
             elif obj in self.active_objects:
                 self.active_objects.remove(obj)
 
-    def get_active_objects(self) -> Set['GameObject']:
+            #distance = ((obj_center[0] - cam_x) ** 2 +
+            #            (obj_center[1] - cam_y) ** 2) ** 0.5
+            #if distance <= self.activation_distance:
+            #   self.active_objects.add(obj)...
+
+    def get_active_objects(self) -> Set[GameObject]:
         return self.active_objects
 
 class Layer:
     def __init__(self):
         self.objects : list[StaticObject] = []
-
-    def update(self):
-        ...
 
 class LayerSystem:
     def __init__(self, size : tuple[int, int], screen : pygame.Surface):

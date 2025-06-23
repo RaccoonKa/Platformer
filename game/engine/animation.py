@@ -33,6 +33,8 @@ class AnimationEngine:
         container.all_anims[animation_name] = {'delay' : anim_delay, 'list' : anim_list}
 
     def switch_anim(self,obj : StaticObject, animation_name : str, play_now : bool = False, cycle : bool = True, to_normal : bool = False):
+        if animation_name not in self.containers[obj].all_anims:
+            raise ValueError(f"Animation {animation_name} not found")
         container = self.containers[obj]
         container.current_animation = container.all_anims[animation_name]['list']
         container.animation_delay = container.all_anims[animation_name]['delay']

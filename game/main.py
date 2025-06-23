@@ -10,7 +10,7 @@ from engine.control import InputHandler
 from engine.script_system import ScriptingSystem
 from engine.sound import SoundEngine
 from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand, MouseButtonCommand
-from game.subsystems.scripts import MarioChaseScript
+from game.subsystems.scripts import MarioChaseScript, Patrol
 
 
 def test() -> None:
@@ -20,7 +20,7 @@ def test() -> None:
     #Базовые настройки
     pygame.init()
     screen = pygame.display.set_mode(size = screen_size, vsync = max_fps) #Разрешение
-    pygame.display.set_caption("Окно так называется, йоу") #Название окна
+    pygame.display.set_caption("Окно так называется") #Название окна
 
     icon = pygame.image.load("assets/icon.png")
     pygame.display.set_icon(icon)
@@ -70,7 +70,7 @@ def test() -> None:
     player.set_force_active(True)
     brick_sprite = pygame.image.load("assets/test/brick.png")
     for i in range(100,5000,70):
-        for j in range(0,1080-35,35):
+        for j in range(0,1080-35*3,35):
             if random.randint(0,100) % 100 == 0:
                 brick = StaticObject((i,j),brick_sprite, generate_hitbox= True)
                 l2.objects.append(brick)
@@ -83,7 +83,7 @@ def test() -> None:
         physics.add_static_object(brick)
         activity_manager.add_object(brick)
 
-    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=-5*16,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
+    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=5*16,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
     the_flying_brick.velocity_x = 25
     the_flying_brick.velocity_y = -5
     l2.objects.append(the_flying_brick)
@@ -116,6 +116,12 @@ def test() -> None:
     input_engine.bind_mouse_button(1,MouseButtonCommand(input_engine,mario.hitbox))
 
 
+    mario2 = MovingObject(pos = (1500,1080-70-70-70),speed_x=10*16, speed_y=20*16, sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox= None, friction_x=0.05,friction_y=0)
+    l2.objects.append(mario2)
+    physics.add_stoppable_object(mario2)
+    activity_manager.add_object(mario2)
+    mario2patrol = Patrol(mario2,[(1500,970),[2000,970]])
+    script_engine.add_script(mario2patrol)
 
 
     #meow
@@ -128,9 +134,11 @@ def test() -> None:
     animation_engine.add_anim(player,'rotate',1,[pygame.image.load('assets/character/char0.png'),pygame.image.load('assets/character/char1.png')])
     animation_engine.switch_anim(player,'rotate')
     animation_engine.turn_on(player)
-    frame_cnt = 0
+
     #Основной цикл
+    frame_cnt = 0
     game_time = 0
+    log_delay = 0
     while not full_exit:
         fps = clock.get_fps()
         dt = 1/fps if fps != 0 else 0
@@ -158,13 +166,15 @@ def test() -> None:
 
         pygame.display.update()
 
-        #tmp
-        game_time += clock.get_time()/1000
-        if frame_cnt == max_fps*5:
+        #tmp gonna script?
+        game_time += dt#clock.get_time()/1000
+        log_delay += dt
+        if log_delay > 5:
             print("активных объектов:",len(activity_manager.get_active_objects()))
             print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {dt}")
             print("game time:",game_time)
             frame_cnt = 0
+            log_delay = 0
         frame_cnt +=1
 
         clock.tick_busy_loop(max_fps)
@@ -176,5 +186,3 @@ def test() -> None:
 
 if __name__ == "__main__":
     test()
-
-# Сделать систему контроля прогрузки объектов. Т.е. физика, анимации просчитываются только в конкретной области.
