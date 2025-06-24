@@ -1,11 +1,17 @@
 import pygame
-from menu_classes.menu_objects import (Objects, Text, MenuItem)
-from menu_classes.menu_background import DynamicBackgroundManager
-from menu_classes.menu_animations import FadeAnimation
-from menu_classes.menu_music import (Music, Slider)
-from secrets import setup_secrets
-pygame.init()
+from menu_classes.menu_objects import Objects
+from menu_classes.menu_music import Music
+from menu_things.secrets import setup_secrets
+from menu_things.menu_ui import (
+    create_main_menu_elements,
+    create_settings_elements,
+    create_authors_elements,
+    create_game_start_elements,
+    create_intro,
+    create_background_manager
+)
 
+pygame.init()
 
 # Setting the screen resolution
 GAME_WIDTH, GAME_HEIGHT = 1920, 1080
@@ -14,118 +20,20 @@ SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
 game_surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
 
-
-# Intro
-animator = FadeAnimation(screen)
-intro = pygame.image.load("assets(menu)/pictures/intro/intro.png").convert_alpha()
-intro = pygame.transform.scale(intro, (600, 600))
-animator.fade_in(intro, duration = 4)
-pygame.time.delay(3000)
-animator.fade_out(intro, duration = 4)
-
-
-# Background
-background_manager = DynamicBackgroundManager(
-    screen,
-    folder_path = "assets(menu)/pictures/background",
-    prefix = "bg",
-    start = 0,
-    end = 38,
-    change_interval = 0.6
-)
+# Intro & Background
+create_intro(screen)
+background_manager = create_background_manager(screen)
 background_manager.start()
-
 
 # Launch music
 music = Music()
 music.play_loop()
 
-
-# Create Game Menu
-title = Text(
-    text = "THE FOG",
-    position = (GAME_WIDTH//2.85 - 25, 250),
-    font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
-    font_size = 80,
-    color = (255, 255, 255),
-    alpha = 255,
-)
-press_any_button = Text(
-    text = "press any button",
-    position = (GAME_WIDTH//2.8, 420),
-    font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-    font_size = 30,
-    color = (255, 255, 255),
-    alpha = 255,
-)
-
-menu_items = [
-    MenuItem(
-        text="Start",
-        position = (GAME_WIDTH//2.5 - 10, GAME_HEIGHT//5.2),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45
-    ),
-    MenuItem(
-        text = "Settings",
-        position = (GAME_WIDTH//2.5 - 42, GAME_HEIGHT//3.9),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45
-    ),
-    MenuItem(
-        text="Authors",
-        position = (GAME_WIDTH//2.5 - 40, GAME_HEIGHT//3.13),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45
-    ),
-    MenuItem(
-        text = "Exit",
-        position=(GAME_WIDTH // 2.5 + 5, GAME_HEIGHT // 2.6),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-        font_size = 45
-    )
-]
-# Settings
-settings_title = Text(
-    text = "SETTINGS",
-    position = (GAME_WIDTH//1.7 - 10, GAME_HEIGHT//15),
-    font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
-    font_size = 50
-)
-music_slider = Slider(
-    x = GAME_WIDTH//1.7 + 15,
-    y = GAME_HEIGHT//6,
-    width = 200,
-    height = 10,
-    min_val = 0.0,
-    max_val = 1.0,
-    initial_val = music.volume,
-    label = "Music",
-    font_path="assets(menu)/fonts/GNF/GNF.ttf",
-    font_size = 25
-)
-sound_slider = Slider(
-    x = GAME_WIDTH//1.7 + 15,
-    y = GAME_HEIGHT//4,
-    width = 200,
-    height = 10,
-    min_val = 0.0,
-    max_val = 1.0,
-    initial_val = 0.5,
-    label = "Sound",
-    font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-    font_size = 25
-)
-back_button = MenuItem(
-    text = "Back",
-    position = (GAME_WIDTH//1.5, GAME_HEIGHT//2.7),
-    font_path = "assets(menu)/fonts/GNF/GNF.ttf",
-    font_size = 35,
-    text_color = (255, 255, 255),
-    bg_color = (50, 50, 150, 180),
-    bg_padding = 10
-)
-
+# Create menu elements
+title, press_any_button, menu_items = create_main_menu_elements(GAME_WIDTH, GAME_HEIGHT)
+settings_title, music_slider, sound_slider, back_button = create_settings_elements(GAME_WIDTH, GAME_HEIGHT, music)
+authors_title, authors_lines, authors_back_button = create_authors_elements(GAME_WIDTH, GAME_HEIGHT)
+next_button = create_game_start_elements(GAME_WIDTH, GAME_HEIGHT)
 
 text_alpha = 0
 text_target_alpha = 255
@@ -141,21 +49,46 @@ switch_sound.set_volume(sound_volume)
 select_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/select.mp3")
 select_sound.set_volume(sound_volume)
 
-
 # Launch
 pygame.display.set_caption("THE FOG")
 running = True
 clock = pygame.time.Clock()
 
+# Flags of activities
 show_text = True
 menu_active = False
 menu_visible = False
 key_pressed = False
 settings_active = False
+authors_active = False
+game_start_active = False
+current_state = "main_menu"
 selected_index = 0
 settings_alpha = 0
-current_state = "main_menu"
+authors_alpha = 0
+game_start_alpha = 0
 selected_setting_index = 0
+selected_authors_index = 0
+selected_game_start_index = -1
+
+# For GAME START
+current_image_index = 0
+game_images = []
+game_images_paths = [
+    "assets(menu)/pictures/comic/bg0.png",
+    "assets(menu)/pictures/comic/bg38.png",
+]
+
+# Uploading images for the game
+for path in game_images_paths:
+    try:
+        img = pygame.image.load(path).convert_alpha()
+        game_images.append(img)
+    except pygame.error:
+        print(f"Error loading image: {path}")
+        img = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
+        img.fill((0, 0, 0))
+        game_images.append(img)
 
 while running:
     for event in pygame.event.get():
@@ -169,6 +102,7 @@ while running:
             music_slider.dragging = False
             sound_slider.dragging = False
 
+        # Preventing the processing of a single event in multiple states
         if current_state == "main_menu":
             if event.type == pygame.KEYDOWN and show_text:
                 show_text = False
@@ -186,13 +120,16 @@ while running:
                 elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                     if select_sound: select_sound.play()
                     if selected_index == 0:
-                        print("Start button")
+                        current_state = "game_start"
+                        game_start_active = True
+                        current_image_index = 0
                     elif selected_index == 1:
                         current_state = "settings"
                         settings_active = True
                         selected_setting_index = 0
                     elif selected_index == 2:
-                        print("Author button")
+                        current_state = "authors"
+                        authors_active = True
                     elif selected_index == 3:
                         running = False
 
@@ -219,19 +156,23 @@ while running:
                             if item.bg_rect.collidepoint(game_x, game_y):
                                 if select_sound: select_sound.play()
                                 if i == 0:
-                                    print("Start button")
+                                    current_state = "game_start"
+                                    game_start_active = True
+                                    current_image_index = 0
                                 elif i == 1:
                                     current_state = "settings"
                                     selected_setting_index = 0
                                     settings_active = True
                                 elif i == 2:
-                                    print("Author button")
+                                    current_state = "authors"
+                                    authors_active = True
+                                    selected_authors_index = 0
                                 elif i == 3:
                                     running = False
                                 break
 
         # Event handling in settings
-        if current_state == "settings":
+        elif current_state == "settings":
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
@@ -300,11 +241,97 @@ while running:
                         if select_sound: select_sound.play()
                         current_state = "main_menu"
                         settings_active = False
+                elif event.key == pygame.K_ESCAPE:
+                    clear_menus()
+                    current_state = "main_menu"
+
+        # Event handling in authors
+        elif current_state == "authors":
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
+                game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
+                if event.type == pygame.MOUSEMOTION:
+                    if authors_back_button.bg_rect.collidepoint(game_x, game_y):
+                        selected_authors_index = 0
+                    else:
+                        selected_authors_index = -1
+
+                # Click handling
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if authors_back_button.bg_rect.collidepoint(game_x, game_y):
+                        if select_sound: select_sound.play()
+                        current_state = "main_menu"
+
+            # Keyboard handling in authors
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                    if selected_authors_index == 0:
+                        if select_sound: select_sound.play()
+                        clear_menus()
+                        current_state = "main_menu"
+                elif event.key == pygame.K_ESCAPE:
+                    clear_menus()
+                    current_state = "main_menu"
+
+        # GAME LAUNCH
+        elif current_state == "game_start":
+            # Mouse Processing
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
+                game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
+
+                # Updating the selected item on hover
+                if event.type == pygame.MOUSEMOTION:
+                    if next_button.bg_rect.collidepoint(game_x, game_y):
+                        selected_game_start_index = 0
+                    else:
+                        selected_game_start_index = -1
+
+                # Click processing
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if next_button.bg_rect.collidepoint(game_x, game_y):
+                        if select_sound: select_sound.play()
+                        current_image_index += 1
+                        if current_image_index >= len(game_images):
+                            print("Starting actual game...")
+                            # There should be a game launch code here.
+                            current_state = "main_menu"
+                            background_manager.start()
+                            music.play_loop()
+                            game_start_active = False
+
+            # Keyboard handling for NEXT and ESC only
+            if event.type == pygame.KEYDOWN:
+                if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                    if select_sound: select_sound.play()
+                    current_image_index += 1
+                    if current_image_index >= len(game_images):
+                        print("Starting actual game...")
+                        current_state = "main_menu"
+                        background_manager.start()
+                        music.play_loop()
+                        game_start_active = False
+                elif event.key == pygame.K_ESCAPE:
+                    current_state = "main_menu"
+                    background_manager.start()
+                    music.play_loop()
+                    game_start_active = False
+
+
+    # Cleaner
+    def clear_menus():
+        global selected_authors_index, selected_game_start_index
+        selected_authors_index = -1
+        selected_game_start_index = -1
+
 
     # Drawing
-    current_bg = background_manager.get_current_background()
-    if current_bg:
-        game_surface.blit(current_bg, (0, 0))
+    if current_state in ["main_menu", "settings", "authors"]:
+        current_bg = background_manager.get_current_background()
+        if current_bg:
+            game_surface.blit(current_bg, (0, 0))
 
     # Control game menu
     if show_text:
@@ -361,6 +388,36 @@ while running:
         sound_slider.draw(game_surface)
         back_button.set_alpha(settings_alpha)
         back_button.draw(game_surface)
+
+    if current_state == "authors":
+        if authors_alpha < 255:
+            authors_alpha = min(authors_alpha + 5, 255)
+    else:
+        if authors_alpha > 0:
+            authors_alpha = max(authors_alpha - 5, 0)
+
+    if authors_alpha > 0:
+        authors_title.set_alpha(authors_alpha)
+        authors_title.draw(game_surface)
+
+        for line in authors_lines:
+            line.set_alpha(authors_alpha)
+            line.draw(game_surface)
+
+        authors_back_button.set_alpha(authors_alpha)
+        authors_back_button.set_active(selected_authors_index == 0)
+        authors_back_button.draw(game_surface)
+
+    if current_state == "game_start":
+        game_surface.fill((0, 0, 0))
+
+        if game_images and current_image_index < len(game_images):
+            game_surface.blit(game_images[current_image_index], (0, 0))
+
+        # Drawing the NEXT button
+        next_button.set_alpha(255)
+        next_button.set_active(selected_game_start_index == 0)
+        next_button.draw(game_surface)
 
     objects_manager.draw(game_surface)
     scaled_surface = pygame.transform.scale(game_surface, (SCREEN_WIDTH, SCREEN_HEIGHT))
