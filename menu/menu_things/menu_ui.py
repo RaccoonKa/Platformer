@@ -15,9 +15,9 @@ def create_intro(screen):
         intro = pygame.Surface((600, 600))
         intro.fill((0, 0, 0))
 
-    animator.fade_in(intro, duration = 0)
-    pygame.time.delay(0)
-    animator.fade_out(intro, duration = 0)
+    animator.fade_in(intro, duration = 4)
+    pygame.time.delay(3000)
+    animator.fade_out(intro, duration = 4)
     return animator
 
 
@@ -27,7 +27,7 @@ def create_background_manager(screen):
         folder_path = "assets(menu)/pictures/background",
         prefix = "bg",
         start = 0,
-        end = 38,
+        end = 78,
         change_interval = 0.6
     )
 

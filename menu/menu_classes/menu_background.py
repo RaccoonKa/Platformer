@@ -86,10 +86,10 @@ class Background:
 
 # Dynamic switch backgrounds
 class DynamicBackgroundManager(Background):
-    def __init__(self, screen, folder_path, prefix="bg", start=0, end=38,
-                 extension=".png", change_interval=1.0):
+    def __init__(self, screen, folder_path, prefix = "bg", start = 0, end = 78,
+                 extension = ".png", change_interval = 0.6):
         image_paths = [
             os.path.join(folder_path, f"{prefix}{i}{extension}")
             for i in range(start, end + 1)
         ]
-        super().__init__(screen, image_paths=image_paths, change_interval=change_interval)
+        super().__init__(screen, image_paths = image_paths, change_interval = change_interval)
