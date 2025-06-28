@@ -1,4 +1,5 @@
 import pygame
+from menu_classes.menu_animations import GlitchEffect
 from menu_classes.menu_objects import Objects
 from menu_classes.menu_music import Music
 from menu_things.secrets import setup_secrets
@@ -8,7 +9,8 @@ from menu_things.menu_ui import (
     create_authors_elements,
     create_game_start_elements,
     create_intro,
-    create_background_manager
+    create_background_manager,
+    create_game_intro_text
 )
 
 pygame.init()
@@ -55,13 +57,16 @@ running = True
 clock = pygame.time.Clock()
 
 # Flags of activities
+glitch_effect = None
 show_text = True
+take_snapshot = False
 menu_active = False
 menu_visible = False
 key_pressed = False
 settings_active = False
 authors_active = False
 game_start_active = False
+intro_text_finished = False
 current_state = "main_menu"
 selected_index = 0
 settings_alpha = 0
@@ -74,21 +79,23 @@ selected_game_start_index = -1
 # For GAME START
 current_image_index = 0
 game_images = []
+dark_image_path = "assets(menu)/pictures/comic/dark.jpg"
 game_images_paths = [
     "assets(menu)/pictures/comic/bg0.png",
     "assets(menu)/pictures/comic/bg38.png",
 ]
 
-# Uploading images for the game
+intro_text, intro_text_rect = create_game_intro_text(GAME_WIDTH, GAME_HEIGHT)
+intro_text_alpha = 0
+intro_text_start_time = 0
+intro_text_duration = 4000
+intro_text_shown = False
+
+# Drawing images in the start menu
+dark_image = pygame.image.load(dark_image_path).convert_alpha()
 for path in game_images_paths:
-    try:
-        img = pygame.image.load(path).convert_alpha()
-        game_images.append(img)
-    except pygame.error:
-        print(f"Error loading image: {path}")
-        img = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
-        img.fill((0, 0, 0))
-        game_images.append(img)
+    img = pygame.image.load(path).convert_alpha()
+    game_images.append(img)
 
 while running:
     for event in pygame.event.get():
@@ -121,7 +128,7 @@ while running:
                     if select_sound: select_sound.play()
                     if selected_index == 0:
                         current_state = "game_start"
-                        game_start_active = True
+                        take_snapshot = True
                         current_image_index = 0
                     elif selected_index == 1:
                         current_state = "settings"
@@ -157,7 +164,7 @@ while running:
                                 if select_sound: select_sound.play()
                                 if i == 0:
                                     current_state = "game_start"
-                                    game_start_active = True
+                                    take_snapshot = True
                                     current_image_index = 0
                                 elif i == 1:
                                     current_state = "settings"
@@ -277,47 +284,60 @@ while running:
         # GAME LAUNCH
         elif current_state == "game_start":
             # Mouse Processing
-            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
-                game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
+            if current_image_index > 0:
+                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
+                    game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
 
-                # Updating the selected item on hover
-                if event.type == pygame.MOUSEMOTION:
-                    if next_button.bg_rect.collidepoint(game_x, game_y):
-                        selected_game_start_index = 0
-                    else:
-                        selected_game_start_index = -1
+                    # Updating the selected item on hover
+                    if event.type == pygame.MOUSEMOTION:
+                        if next_button.bg_rect.collidepoint(game_x, game_y):
+                            selected_game_start_index = 0
+                        else:
+                            selected_game_start_index = -1
 
-                # Click processing
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if next_button.bg_rect.collidepoint(game_x, game_y):
-                        if select_sound: select_sound.play()
-                        current_image_index += 1
-                        if current_image_index >= len(game_images):
-                            print("Starting actual game...")
-                            # There should be a game launch code here.
-                            current_state = "main_menu"
-                            background_manager.start()
-                            music.play_loop()
-                            game_start_active = False
+                    # Click processing
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if next_button.bg_rect.collidepoint(game_x, game_y):
+                            if select_sound: select_sound.play()
+                            current_image_index += 1
+                            if current_image_index > len(game_images):
+                                print("Starting actual game...")
+                                current_state = "main_menu"
+                                background_manager.start()
+                                music.play_loop()
+                                game_start_active = False
+                                current_image_index = 0
+                                intro_text_shown = False
+                                intro_text_alpha = 0
+                                intro_text_finished = False
 
             # Keyboard handling for NEXT and ESC only
             if event.type == pygame.KEYDOWN:
-                if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                if event.key in [pygame.K_RETURN,
+                                 pygame.K_SPACE] and current_image_index > 0:
                     if select_sound: select_sound.play()
                     current_image_index += 1
-                    if current_image_index >= len(game_images):
+                    if current_image_index > len(game_images):
                         print("Starting actual game...")
                         current_state = "main_menu"
                         background_manager.start()
                         music.play_loop()
                         game_start_active = False
+                        current_image_index = 0
+                        intro_text_shown = False
+                        intro_text_alpha = 0
+                        intro_text_finished = False
                 elif event.key == pygame.K_ESCAPE:
                     current_state = "main_menu"
                     background_manager.start()
                     music.play_loop()
                     game_start_active = False
+                    current_image_index = 0
+                    intro_text_shown = False
+                    intro_text_alpha = 0
+                    intro_text_finished = False
 
 
     # Cleaner
@@ -328,10 +348,13 @@ while running:
 
 
     # Drawing
-    if current_state in ["main_menu", "settings", "authors"]:
+    if current_state in ["main_menu", "settings", "authors", "prepare_glitch"]:
         current_bg = background_manager.get_current_background()
         if current_bg:
             game_surface.blit(current_bg, (0, 0))
+
+    if current_state in ["main_menu", "settings", "authors", "prepare_glitch"]:
+        objects_manager.draw(game_surface)
 
     # Control game menu
     if show_text:
@@ -410,14 +433,52 @@ while running:
 
     if current_state == "game_start":
         game_surface.fill((0, 0, 0))
+        if current_image_index == 0:
+            game_surface.blit(dark_image, (0, 0))
+        elif 0 < current_image_index <= len(game_images):
+            game_surface.blit(game_images[current_image_index - 1], (0, 0))
 
-        if game_images and current_image_index < len(game_images):
-            game_surface.blit(game_images[current_image_index], (0, 0))
+        if current_image_index == 0:
+            if not intro_text_shown:
+                intro_text_alpha = min(intro_text_alpha + 3, 255)
+                intro_text.set_alpha(intro_text_alpha)
+                if intro_text_alpha == 255:
+                    intro_text_shown = True
+                    intro_text_start_time = pygame.time.get_ticks()
 
-        # Drawing the NEXT button
-        next_button.set_alpha(255)
-        next_button.set_active(selected_game_start_index == 0)
-        next_button.draw(game_surface)
+            if intro_text_shown and (pygame.time.get_ticks() - intro_text_start_time) > intro_text_duration:
+                intro_text_alpha = max(intro_text_alpha - 3, 0)
+                intro_text.set_alpha(intro_text_alpha)
+                if intro_text_alpha == 0:
+                    intro_text_finished = True
+                    current_image_index = 1
+
+            if intro_text_alpha > 0:
+                game_surface.blit(intro_text, intro_text_rect)
+
+        if current_image_index >= 1 and current_image_index <= len(game_images):
+            next_button.set_alpha(255)
+            next_button.set_active(selected_game_start_index == 0)
+            next_button.draw(game_surface)
+
+    if take_snapshot:
+        glitch_base = game_surface.copy()
+        glitch_effect = GlitchEffect(screen, glitch_base, duration = 1.0)
+        background_manager.stop()
+        music.stop()
+        current_state = "glitch_effect"
+        take_snapshot = False
+
+    if current_state == "glitch_effect":
+        glitch_frame, finished = glitch_effect.update()
+        game_surface.blit(glitch_frame, (0, 0))
+
+        if finished:
+            current_state = "game_start"
+            game_start_active = True
+            current_image_index = 0
+            glitch_effect = None
+
 
     objects_manager.draw(game_surface)
     scaled_surface = pygame.transform.scale(game_surface, (SCREEN_WIDTH, SCREEN_HEIGHT))

@@ -15,9 +15,9 @@ def create_intro(screen):
         intro = pygame.Surface((600, 600))
         intro.fill((0, 0, 0))
 
-    animator.fade_in(intro, duration = 4)
-    pygame.time.delay(3000)
-    animator.fade_out(intro, duration = 4)
+    animator.fade_in(intro, duration = 0)
+    pygame.time.delay(0)
+    animator.fade_out(intro, duration = 0)
     return animator
 
 
@@ -211,5 +211,13 @@ def create_game_start_elements(game_width, game_height):
         bg_color = (50, 50, 150, 180),
         bg_padding = 10
     )
-
     return next_button
+
+def create_game_intro_text(game_width, game_height):
+    font = pygame.font.Font("assets(menu)/fonts/Epilepsy Sans/EpilepsySans.ttf", 35)
+    intro_text = font.render("Жизнь — это испытание, это подготовка и анализ, но большинство просто приспосабливается и тонет в рутине", True, (255, 255, 255))
+    intro_text.set_alpha(0)
+    text_rect = intro_text.get_rect(center=(game_width // 2, game_height // 2))
+
+    return intro_text, text_rect
+
