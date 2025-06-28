@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import pygame.time
+
 from game.engine.script_system import Script
 from game.engine.objects import MovingObject
+from game.engine.render import Camera, ActivityManager
 
 
 class MarioChaseScript(Script):
     def __init__(self, chase_object : MovingObject, target : MovingObject) -> None:
-        super().__init__()
-        #self.enabled = True
+        super().__init__(enabled= True)
         self.chase_object : MovingObject = chase_object
         self.target : MovingObject = target
 
@@ -50,7 +52,7 @@ class Patrol(Script):
     def __init__(self, obj: MovingObject, points: list[tuple[float, float]],
                  speed_x: float = 100.0, speed_y: float = -1, cyclic: bool = True,
                  teleport : bool = False, reach_distance: float = 5.0) -> None:
-        super().__init__()
+        super().__init__(enabled= True)
         self.obj = obj
         self.points = points
         self.speed_x = speed_x
@@ -137,6 +139,34 @@ class Patrol(Script):
     def skip_to_point(self, index: int) -> None:
         if 0 <= index < len(self.points):
             self.current_point_index = index
+
+
+class LogScript(Script):
+    def __init__(self, camera : Camera, clock : pygame.time.Clock,  player : MovingObject, activity_manager : ActivityManager ,game_time : float = 0):
+        super().__init__()
+        self.camera = camera
+        self.clock = clock
+        self.player =player
+        self.activity_manager = activity_manager
+
+        self.game_time = game_time
+        self.log_delay = 0
+
+    def start(self) -> None:
+        print("LogScript start working")
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        self.game_time += dt
+        self.log_delay += dt
+        if self.log_delay > 5:
+            print("активных объектов:", len(self.activity_manager.get_active_objects()))
+            print(
+                f"camera: {self.camera.x, self.camera.y}, player: {self.player.x, self.player.y}, fps: {self.clock.get_fps()}, frame_time: {dt}")
+            print("game time:", self.game_time)
+            self.log_delay = 0
 
 '''
 class Script(ABC):

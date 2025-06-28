@@ -2,15 +2,15 @@ import pygame
 import sys
 import random
 
-from engine.objects import StaticObject, MovingObject, Player
-from engine.render import Camera, Layer, LayerSystem, ActivityManager
-from engine.physics import PhysicEngine
-from engine.animation import  AnimationEngine
-from engine.control import InputHandler
-from engine.script_system import ScriptingSystem
-from engine.sound import SoundEngine
+from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
+from game.engine.render import Camera, CameraManager, Layer, LayerSystem, ActivityManager
+from game.engine.physics import PhysicEngine
+from game.engine.animation import  AnimationEngine
+from game.engine.control import InputHandler
+from game.engine.script_system import ScriptingSystem
+from game.engine.sound import SoundEngine
 from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand, MouseButtonCommand
-from game.subsystems.scripts import MarioChaseScript, Patrol
+from game.subsystems.scripts import MarioChaseScript, Patrol, LogScript
 
 
 def test() -> None:
@@ -33,8 +33,13 @@ def test() -> None:
     #Загрузка базовых объектов
     level_size = (5000,1080)
 
-    player = Player(pos = (0,0), speed_x=10*16, speed_y=20*16,sprite= pygame.image.load("assets/character/char0.png"), friction_x = 0.05, generate_hitbox = True)
+    player = Player(pos = (0,0), speed_x=10*16, speed_y=20*16,sprite= pygame.image.load("assets/character/char0.png"), ground_friction_x = 3, air_friction_x= 0.5, generate_hitbox = True)
     camera = Camera(player,screen_size)
+    cam_manager = CameraManager(camera)
+    cam_box_1 = Hitbox((0,0),(5000-1920,0))
+    cam_box_2 = Hitbox((2000, -1000), (200, 4000))
+    cam_manager.add_cam_box(cam_box_1)
+    cam_manager.add_cam_box(cam_box_2)
 
     activity_manager = ActivityManager(camera, activation_distance=2500)
 
@@ -83,7 +88,7 @@ def test() -> None:
         physics.add_static_object(brick)
         activity_manager.add_object(brick)
 
-    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=5*16,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None,friction_x=0,friction_y=0)
+    the_flying_brick = MovingObject(pos=(-200, 1080-70-70-70-70-35),speed_x=5*16,speed_y=5*16,sprite=brick_sprite,gravitation=False,generate_hitbox=True,hitbox=None)
     the_flying_brick.velocity_x = 25
     the_flying_brick.velocity_y = -5
     l2.objects.append(the_flying_brick)
@@ -92,7 +97,7 @@ def test() -> None:
 
     mariosprite = pygame.image.load("assets/character/mario.png")
 
-    mario = MovingObject(pos=(30, 1080-70-70-70-70-35),speed_x=5*16,speed_y=20*16,sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox=None,friction_x=0.05,friction_y=0)
+    mario = MovingObject(pos=(30, 1080-70-70-70-70-35),speed_x=5*16,speed_y=20*16,sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox=None,ground_friction_x=3, air_friction_x=0.05)
     l2.objects.append(mario)
     physics.add_stoppable_object(mario)
     activity_manager.add_object(mario)
@@ -116,7 +121,7 @@ def test() -> None:
     input_engine.bind_mouse_button(1,MouseButtonCommand(input_engine,mario.hitbox))
 
 
-    mario2 = MovingObject(pos = (1500,1080-70-70-70),speed_x=10*16, speed_y=20*16, sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox= None, friction_x=0.05,friction_y=0)
+    mario2 = MovingObject(pos = (1500,1080-70-70-70),speed_x=10*16, speed_y=20*16, sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox= None, ground_friction_x=3, air_friction_x=0.05)
     l2.objects.append(mario2)
     physics.add_stoppable_object(mario2)
     activity_manager.add_object(mario2)
@@ -135,10 +140,10 @@ def test() -> None:
     animation_engine.switch_anim(player,'rotate')
     animation_engine.turn_on(player)
 
+
+    log = LogScript(camera,clock,player,activity_manager)
+    script_engine.add_script(log)
     #Основной цикл
-    frame_cnt = 0
-    game_time = 0
-    log_delay = 0
     while not full_exit:
         fps = clock.get_fps()
         dt = 1/fps if fps != 0 else 0
@@ -160,22 +165,11 @@ def test() -> None:
 
         layer_system.update(activity_manager)
 
-        camera.update()
-        # + => render.update()?
+        cam_manager.update()
+
         layer_system.draw_by_camera(screen,camera)
 
         pygame.display.update()
-
-        #tmp gonna script?
-        game_time += dt#clock.get_time()/1000
-        log_delay += dt
-        if log_delay > 5:
-            print("активных объектов:",len(activity_manager.get_active_objects()))
-            print(f"camera: {camera.x,camera.y}, player: {player.x,player.y}, fps: {clock.get_fps()}, frame_time: {dt}")
-            print("game time:",game_time)
-            frame_cnt = 0
-            log_delay = 0
-        frame_cnt +=1
 
         clock.tick_busy_loop(max_fps)
 

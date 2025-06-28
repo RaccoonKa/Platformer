@@ -62,9 +62,12 @@ class PhysicEngine:
 
             obj.hitbox.x += dx
             obj.hitbox.y += dy
+            if obj.is_grounded:
+                obj.velocity_x *= (1 - obj.ground_friction_x * dt)
+            else:
+                obj.velocity_x *= (1 - obj.air_friction_x * dt)
+                obj.velocity_y *= (1 - obj.air_friction_y * dt)
 
-            obj.velocity_x *= (1 - obj.friction_x)
-            obj.velocity_y *= (1 - obj.friction_y)
 
     @staticmethod
     def collide_detect(hb1: Hitbox, hb2: Hitbox) -> bool:

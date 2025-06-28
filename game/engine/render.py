@@ -1,6 +1,6 @@
 import pygame
 from typing import List, Set
-from game.engine.objects import GameObject, StaticObject, MovingObject
+from game.engine.objects import GameObject, StaticObject, MovingObject, Hitbox
 
 # Отвечает за камеру; как будто нужно сделать cum zone
 class Camera:
@@ -31,6 +31,57 @@ class Camera:
 
         self.x = centre[0] - self.screen_size[0]/2
         self.y = centre[1] - self.screen_size[1]/2
+
+class CameraManager:
+    def __init__(self, camera : Camera,):
+        self.active_camera =  camera
+        self.cam_rects : list[Hitbox] = list()
+
+    def add_cam_box(self, hitbox : Hitbox):
+        if hitbox not in self.cam_rects:
+            self.cam_rects.append(hitbox)
+
+    def delete_cam_box(self, hitbox : Hitbox):
+        self.cam_rects.remove(hitbox)
+
+    def update(self):
+        self.active_camera.update()
+
+        cam_x = self.active_camera.x
+        cam_y = self.active_camera.y
+
+        inside = False
+        for rect in self.cam_rects:
+            if ((cam_x >= rect.x) and
+                    (cam_x < rect.x + rect.size[0]) and
+                    (cam_y >= rect.y) and
+                    (cam_y < rect.y + rect.size[1])):
+                inside = True
+                break
+
+        if not inside and self.cam_rects:
+            min_distance_sq = float('inf')
+            new_pos = None
+
+            for rect in self.cam_rects:
+                rect_x1 = rect.x
+                rect_y1 = rect.y
+                rect_x2 = rect.x + rect.size[0]
+                rect_y2 = rect.y + rect.size[1]
+
+                x_clamped = max(rect_x1, min(cam_x, rect_x2))
+                y_clamped = max(rect_y1, min(cam_y, rect_y2))
+
+                dx = cam_x - x_clamped
+                dy = cam_y - y_clamped
+                distance_sq = dx * dx + dy * dy
+
+                if distance_sq < min_distance_sq:
+                    min_distance_sq = distance_sq
+                    new_pos = (x_clamped, y_clamped)
+
+            if new_pos:
+                self.active_camera.x, self.active_camera.y = new_pos
 
 class ActivityManager:
     def __init__(self, camera: Camera, activation_distance: float = 2000) -> None:
@@ -73,11 +124,6 @@ class ActivityManager:
                 self.active_objects.add(obj)
             elif obj in self.active_objects:
                 self.active_objects.remove(obj)
-
-            #distance = ((obj_center[0] - cam_x) ** 2 +
-            #            (obj_center[1] - cam_y) ** 2) ** 0.5
-            #if distance <= self.activation_distance:
-            #   self.active_objects.add(obj)...
 
     def get_active_objects(self) -> Set[GameObject]:
         return self.active_objects

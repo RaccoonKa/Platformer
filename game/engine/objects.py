@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 from dataclasses import dataclass
 
-#Rectangle пока
+
 class Hitbox:
     def __init__(self, pos : tuple[float, float], size : tuple[int, int]):
         self.x = pos[0]
@@ -133,14 +133,18 @@ class StaticObject(GameObject):
 
 
 class MovingObject(StaticObject):
-    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, gravitation : bool = False, generate_hitbox : bool = False, hitbox : Hitbox = None, friction_x : float = 0, friction_y : float = 0):
-        StaticObject.__init__(self, pos = pos,sprite= sprite, generate_hitbox= generate_hitbox, hitbox = hitbox)
+    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, gravitation : bool = False, generate_hitbox : bool = False, hitbox : Hitbox = None, ground_friction_x : float = 0, air_friction_x : float = 0, air_friction_y : float = 0):
+        super().__init__(pos = pos,sprite= sprite, generate_hitbox= generate_hitbox, hitbox = hitbox)
         self.max_speed_x = speed_x
         self.max_speed_y = speed_y
+
         self.velocity_x = 0
         self.velocity_y = 0
-        self.friction_x = friction_x
-        self.friction_y = friction_y
+
+        self.ground_friction_x = ground_friction_x
+        self.air_friction_x = air_friction_x
+        self.air_friction_y = air_friction_y
+
         self.is_gravitate = gravitation
         self.is_grounded = False
 
@@ -177,25 +181,34 @@ class MovingObject(StaticObject):
         self._velocity_y = value
 
     @property
-    def friction_x(self) -> float:
-        return self._friction_x
+    def ground_friction_x(self) -> float:
+        return self._ground_friction_x
 
-    @friction_x.setter
-    def friction_x(self, value: float) -> None:
-        self._friction_x = value
+    @ground_friction_x.setter
+    def ground_friction_x(self, value: float) -> None:
+        self._ground_friction_x = value
 
     @property
-    def friction_y(self) -> float:
-        return self._friction_y
+    def air_friction_x(self) -> float:
+        return self._air_friction_x
 
-    @friction_y.setter
-    def friction_y(self, value: float) -> None:
-        self._friction_y = value
+    @air_friction_x.setter
+    def air_friction_x(self, value: float) -> None:
+        self._air_friction_x = value
+
+    @property
+    def air_friction_y(self) -> float:
+        return self._air_friction_y
+
+    @air_friction_y.setter
+    def air_friction_y(self, value: float) -> None:
+        self._air_friction_y = value
 
 
 class Player(MovingObject):
-    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, friction_x : float, sprite : pygame.Surface = None, lives_count = 5, generate_hitbox : bool = False, hitbox : Hitbox = None):
-        MovingObject.__init__(self, pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = True, generate_hitbox= generate_hitbox, hitbox = hitbox, friction_x = friction_x)
+    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, ground_friction_x : float, air_friction_x : float, sprite : pygame.Surface = None, lives_count = 5, generate_hitbox : bool = False, hitbox : Hitbox = None):
+        super().__init__(pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = True, generate_hitbox= generate_hitbox, hitbox = hitbox, ground_friction_x = ground_friction_x, air_friction_x = air_friction_x)
+
         self.lives = lives_count
 
     @property

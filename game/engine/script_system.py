@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 class Script(ABC):
-    def __init__(self) -> None:
-        self.enabled: bool = True
+    def __init__(self, enabled : bool = True) -> None:
+        self.enabled: bool = enabled
 
     @abstractmethod
     def start(self) -> None:
