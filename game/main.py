@@ -2,6 +2,8 @@ import pygame
 import sys
 import random
 
+from pygame import HWSURFACE
+
 from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
 from game.engine.render import Camera, CameraManager, Layer, LayerSystem, ActivityManager
 from game.engine.physics import PhysicEngine
@@ -9,8 +11,9 @@ from game.engine.animation import  AnimationEngine
 from game.engine.control import InputHandler
 from game.engine.script_system import ScriptingSystem
 from game.engine.sound import SoundEngine
-from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand, MouseButtonCommand
+from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand, ExampleMouseButtonCommand
 from game.subsystems.scripts import MarioChaseScript, Patrol, LogScript
+from game.subsystems.levels import Game, Level
 
 
 def test() -> None:
@@ -68,7 +71,7 @@ def test() -> None:
     l2 = Layer()
     l2.objects.append(player)
 
-    physics = PhysicEngine(max_fps)
+    physics = PhysicEngine()
     physics.add_stoppable_object(player)
 
     activity_manager.add_object(player)
@@ -108,17 +111,25 @@ def test() -> None:
     sound_engine.play_music(volume=0.3)
 
 
-    input_engine = InputHandler(camera)
-    input_engine.bind_key(pygame.K_a, MoveLeftCommand(player))
-    input_engine.bind_key(pygame.K_d, MoveRightCommand(player))
-    input_engine.bind_key(pygame.K_w, JumpCommand(player,sound_engine))
-    input_engine.bind_key(pygame.K_SPACE, JumpCommand(player,sound_engine))
-    input_engine.bind_mouse_button(3, MousePositionCommand(input_engine))
+    ground_a = 500
+    air_a = 50
+    max_speed_x = player.max_speed_x-20
+    jump_speed = player.max_speed_y
 
+    m_l_command = MoveLeftCommand(player, ground_a, air_a, max_speed_x)
+    m_r_command = MoveRightCommand(player, ground_a, air_a, max_speed_x)
+    j_command = JumpCommand(player,sound_engine, jump_speed)
+
+    input_engine = InputHandler(camera)
+    input_engine.bind_key(pygame.K_a, m_l_command, 'hold')
+    input_engine.bind_key(pygame.K_d, m_r_command, 'hold')
+    input_engine.bind_key(pygame.K_w, j_command, 'hold')
+    input_engine.bind_key(pygame.K_SPACE, j_command, 'hold')
+    input_engine.bind_mouse_button(3, MousePositionCommand(input_engine), 'press')
 
     script_engine = ScriptingSystem()
     script_engine.add_script(MarioChaseScript(mario,player))
-    input_engine.bind_mouse_button(1,MouseButtonCommand(input_engine,mario.hitbox))
+    input_engine.bind_mouse_button(1, ExampleMouseButtonCommand(input_engine, mario.hitbox), 'press')
 
 
     mario2 = MovingObject(pos = (1500,1080-70-70-70),speed_x=10*16, speed_y=20*16, sprite=mariosprite,gravitation=True,generate_hitbox=True,hitbox= None, ground_friction_x=3, air_friction_x=0.05)
@@ -155,7 +166,7 @@ def test() -> None:
 
         activity_manager.update()
 
-        input_engine.update()
+        input_engine.update(dt)
 
         script_engine.update(dt)
 
@@ -163,9 +174,9 @@ def test() -> None:
 
         animation_engine.update(dt, activity_manager)
 
-        layer_system.update(activity_manager)
-
         cam_manager.update()
+
+        layer_system.update(activity_manager)
 
         layer_system.draw_by_camera(screen,camera)
 

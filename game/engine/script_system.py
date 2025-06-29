@@ -7,6 +7,7 @@ class Script(ABC):
 
     @abstractmethod
     def start(self) -> None:
+        self.enabled = True
         pass
 
     @abstractmethod
@@ -22,10 +23,11 @@ class ScriptingSystem:
     def __init__(self):
         self.scripts: List[Script] = []  # Список всех активных скриптов
 
-    def add_script(self, script: Script) -> None:
+    def add_script(self, script: Script, start : bool = True) -> None:
         if script not in self.scripts:
             self.scripts.append(script)
-            script.start()
+            if start:
+                script.start()
 
     def remove_script(self, script: Script) -> None:
         if script in self.scripts:
@@ -44,3 +46,7 @@ class ScriptingSystem:
             if predicate(script):
                 return script
         return None
+
+    def start_script(self, script: Script) -> None:
+        if script in self.scripts:
+            script.start()

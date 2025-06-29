@@ -14,6 +14,7 @@ class MarioChaseScript(Script):
         self.target : MovingObject = target
 
     def start(self) -> None:
+        self.enabled = True
         print("Марио вышел на охоту")
 
     def stop(self) -> None:
@@ -65,6 +66,7 @@ class Patrol(Script):
         self.is_moving = True
 
     def start(self) -> None:
+        self.enabled = True
         if self.points and self.teleport:
             self.obj.x, self.obj.y = self.points[0]
         print(f"Patrol started with {len(self.points)} points")
@@ -153,6 +155,7 @@ class LogScript(Script):
         self.log_delay = 0
 
     def start(self) -> None:
+        self.enabled = True
         print("LogScript start working")
 
     def stop(self) -> None:
@@ -175,7 +178,7 @@ class Script(ABC):
 
     @abstractmethod
     def start(self) -> None:
-        pass
+        self.enabled = True
 
     @abstractmethod
     def stop(self) -> None:

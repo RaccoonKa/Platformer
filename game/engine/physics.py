@@ -5,22 +5,11 @@ from game.engine.render import ActivityManager
 
 
 class PhysicEngine:
-    def __init__(self, fps : float, g : float = 9.8*16):
+    def __init__(self, g : float = 9.8*16):
         self.static_objects : list[StaticObject] = []
         self.unstoppable_objects : list[MovingObject] = []
         self.stoppable_objects: list[MovingObject] = []
-        self.fps = fps
         self.g = g
-
-    @property
-    def fps(self) -> float:
-        return self._fps
-
-    @fps.setter
-    def fps(self, value : float) -> None:
-        if value == 0:
-            value +=0.001
-        self._fps = value
 
     def add_static_object(self, obj : StaticObject) -> None:
         if obj not in self.static_objects:
