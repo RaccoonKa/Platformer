@@ -204,7 +204,7 @@ def create_authors_elements(game_width, game_height):
 def create_game_start_elements(game_width, game_height):
     next_button = MenuItem(
         text = "NEXT",
-        position = (game_width // 1.2, game_height // 1.1),
+        position = (game_width // 1.1, game_height // 1.1),
         font_path = "assets(menu)/fonts/GNF/GNF.ttf",
         font_size = 35,
         text_color = (255, 255, 255),
@@ -221,3 +221,9 @@ def create_game_intro_text(game_width, game_height):
 
     return intro_text, text_rect
 
+def adjust_comic_position(game_width, game_height):
+    positions = [
+        (game_width * 0.1, game_height * 0.03)
+    ]
+
+    return positions

@@ -10,7 +10,8 @@ from menu_things.menu_ui import (
     create_game_start_elements,
     create_intro,
     create_background_manager,
-    create_game_intro_text
+    create_game_intro_text,
+    adjust_comic_position
 )
 
 pygame.init()
@@ -82,9 +83,9 @@ current_image_index = 0
 game_images = []
 dark_image_path = "assets(menu)/pictures/comic/dark.jpg"
 game_images_paths = [
-    "assets(menu)/pictures/comic/bg0.png",
-    "assets(menu)/pictures/comic/bg38.png",
+    "assets(menu)/pictures/comic/comic1.png"
 ]
+comic_positions = adjust_comic_position(GAME_WIDTH, GAME_HEIGHT)
 
 #Glith effect
 glitch_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/glitch.mp3")
@@ -100,6 +101,7 @@ dark_image = pygame.image.load(dark_image_path).convert_alpha()
 for path in game_images_paths:
     img = pygame.image.load(path).convert_alpha()
     game_images.append(img)
+
 
 while running:
     for event in pygame.event.get():
@@ -444,7 +446,8 @@ while running:
         if current_image_index == 0:
             game_surface.blit(dark_image, (0, 0))
         elif 0 < current_image_index <= len(game_images):
-            game_surface.blit(game_images[current_image_index - 1], (0, 0))
+            pos = comic_positions[current_image_index - 1]
+            game_surface.blit(game_images[current_image_index - 1], pos)
 
         if current_image_index == 0:
             if not intro_text_shown:
