@@ -74,6 +74,7 @@ authors_alpha = 0
 game_start_alpha = 0
 selected_setting_index = 0
 selected_authors_index = 0
+prev_selected_index = -1
 selected_game_start_index = -1
 
 # For GAME START
@@ -85,10 +86,13 @@ game_images_paths = [
     "assets(menu)/pictures/comic/bg38.png",
 ]
 
+#Glith effect
+glitch_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/glitch.mp3")
+glitch_sound.set_volume(sound_volume)
 intro_text, intro_text_rect = create_game_intro_text(GAME_WIDTH, GAME_HEIGHT)
 intro_text_alpha = 0
 intro_text_start_time = 0
-intro_text_duration = 4000
+intro_text_duration = 5000
 intro_text_shown = False
 
 # Drawing images in the start menu
@@ -185,24 +189,28 @@ while running:
                 game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
                 game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
 
-                # Updating the selected item on hover
-                if event.type == pygame.MOUSEMOTION:
-                    if music_slider.rect.collidepoint(game_x, game_y) or \
-                            pygame.Rect(music_slider.rect.x, music_slider.rect.y - 40,
-                                        music_slider.rect.width, 40).collidepoint(game_x, game_y):
-                        selected_setting_index = 0
-                    elif sound_slider.rect.collidepoint(game_x, game_y) or \
-                            pygame.Rect(sound_slider.rect.x, sound_slider.rect.y - 40,
-                                        sound_slider.rect.width, 40).collidepoint(game_x, game_y):
-                        selected_setting_index = 1
-                    elif back_button.bg_rect.collidepoint(game_x, game_y):
-                        selected_setting_index = 2
+                prev_selected_index = selected_setting_index
+                if music_slider.rect.collidepoint(game_x, game_y) or \
+                        pygame.Rect(music_slider.rect.x, music_slider.rect.y - 40,
+                                    music_slider.rect.width, 40).collidepoint(game_x, game_y):
+                    selected_setting_index = 0
+                elif sound_slider.rect.collidepoint(game_x, game_y) or \
+                        pygame.Rect(sound_slider.rect.x, sound_slider.rect.y - 40,
+                                    sound_slider.rect.width, 40).collidepoint(game_x, game_y):
+                    selected_setting_index = 1
+                elif back_button.bg_rect.collidepoint(game_x, game_y):
+                    selected_setting_index = 2
 
-                # Slider processing
+                # We play the sound if the selected item has changed
+                if selected_setting_index != prev_selected_index:
+                    if switch_sound:
+                        switch_sound.play()
+
+                # Slider Processing
                 music_slider.handle_event(event, (game_x, game_y))
                 sound_slider.handle_event(event, (game_x, game_y))
 
-                # "Back" processing
+                # Processing the Back button
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if back_button.bg_rect.collidepoint(game_x, game_y):
                         if select_sound: select_sound.play()
@@ -466,6 +474,7 @@ while running:
         glitch_effect = GlitchEffect(screen, glitch_base, duration = 1.0)
         background_manager.stop()
         music.stop()
+        glitch_sound.play()
         current_state = "glitch_effect"
         take_snapshot = False
 
