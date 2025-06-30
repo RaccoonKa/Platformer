@@ -167,24 +167,31 @@ def create_authors_elements(game_width, game_height):
         ),
         Text(
             text = "Dmitry Rozhkov",
-            position = (game_width // 1.7 + 23, game_height // 3.2),
+            position = (game_width // 1.7 + 25, game_height // 3.2 - 10),
             font_path = "assets(menu)/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
-            text = "...",
-            position = (game_width // 1.7 + 23, game_height // 2.9),
+            text = "Artemy Skvortsov",
+            position = (game_width // 1.7 + 10, game_height // 3 - 8),
             font_path = "assets(menu)/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
-            text = "...",
-            position = (game_width // 1.7 + 23, game_height // 2.7),
+            text = "Alexander Sobolevsky",
+            position = (game_width // 1.7 - 20, game_height // 2.9 + 7),
             font_path = "assets(menu)/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
+        ),
+        Text(
+            text="...",
+            position=(game_width // 1.7, game_height // 2.7),
+            font_path="assets(menu)/fonts/GNF/GNF.ttf",
+            font_size=25,
+            color=(255, 255, 255)
         )
     ]
 
@@ -223,7 +230,8 @@ def create_game_intro_text(game_width, game_height):
 
 def adjust_comic_position(game_width, game_height):
     positions = [
-        (game_width * 0.1, game_height * 0.03)
+        (game_width * 0.1, game_height * 0.03),
+        (game_width * 0.1, game_height * 0.08)
     ]
 
     return positions

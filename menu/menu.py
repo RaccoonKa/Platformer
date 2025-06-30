@@ -83,7 +83,8 @@ current_image_index = 0
 game_images = []
 dark_image_path = "assets(menu)/pictures/comic/dark.jpg"
 game_images_paths = [
-    "assets(menu)/pictures/comic/comic1.png"
+    "assets(menu)/pictures/comic/comic1.png",
+    "assets(menu)/pictures/comic/comic2.png"
 ]
 comic_positions = adjust_comic_position(GAME_WIDTH, GAME_HEIGHT)
 
