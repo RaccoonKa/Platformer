@@ -2,7 +2,6 @@ import pygame
 import sys
 import random
 
-from pygame import HWSURFACE
 
 from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
 from game.engine.render import Camera, CameraManager, Layer, LayerSystem, ActivityManager
@@ -20,7 +19,6 @@ def test() -> None:
     screen_size = (1920,1080)
     max_fps = 60
 
-    #Базовые настройки
     pygame.init()
     screen = pygame.display.set_mode(size = screen_size, vsync = max_fps) #Разрешение
     pygame.display.set_caption("Окно так называется") #Название окна
@@ -29,11 +27,10 @@ def test() -> None:
     pygame.display.set_icon(icon)
 
     clock = pygame.time.Clock()
-    # флаги
+
     full_exit = False
 
 
-    #Загрузка базовых объектов
     level_size = (5000,1080)
 
     player = Player(pos = (0,0), speed_x=10*16, speed_y=20*16,sprite= pygame.image.load("assets/character/char0.png"), ground_friction_x = 3, air_friction_x= 0.5, generate_hitbox = True)
@@ -49,14 +46,19 @@ def test() -> None:
 
     layer_system = LayerSystem(level_size, screen)
 
-    #tmp background
-    bg = Layer()
+    #tmp
+    l0 = Layer()
     tmp_bg = pygame.Surface(level_size)
     tmp_bg.fill('white')
-    background = StaticObject((0,0),tmp_bg)
-    bg.objects.append(background)
-    activity_manager.add_object(background)
-    background.set_force_active(True)
+    layer0 = StaticObject((0,0),tmp_bg)
+    l0.objects.append(layer0)
+    activity_manager.add_object(layer0)
+    layer0.set_force_active(True)
+
+    backgr = StaticObject((0,0),pygame.image.load("assets/background/background.png"),generate_hitbox=False)
+    l0.objects.append(backgr)
+    activity_manager.add_object(backgr)
+    backgr.set_force_active(True)
 
     #tmp
     l1 = Layer()
@@ -66,7 +68,6 @@ def test() -> None:
     l1.objects.append(layer1)
     activity_manager.add_object(layer1)
     activity_manager.set_force_active(layer1,True)
-
 
     l2 = Layer()
     l2.objects.append(player)
@@ -141,7 +142,7 @@ def test() -> None:
 
 
     #meow
-    layer_system.layers.append(bg)
+    layer_system.layers.append(l0)
     layer_system.layers.append(l1)
     layer_system.layers.append(l2)
 
