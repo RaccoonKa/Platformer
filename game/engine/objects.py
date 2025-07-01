@@ -1,6 +1,12 @@
 from __future__ import annotations
 import pygame
 from dataclasses import dataclass
+from typing import TypedDict, NotRequired
+
+
+class HitboxParams(TypedDict):
+    pos : tuple[float,float]
+    size : tuple[int,int]
 
 
 class Hitbox:
@@ -38,7 +44,12 @@ class Hitbox:
                 hb1.x + hb1.size[0] > hb2.x and
                 hb1.y < hb2.y + hb2.size[1] and
                 hb1.y + hb1.size[1] > hb2.y)
-
+    @staticmethod
+    def from_params(params : HitboxParams) -> Hitbox:
+        return Hitbox(
+            pos = params['pos'],
+            size = params['size']
+        )
 
 class GameObject:
     def __init__(self)-> None:
@@ -51,6 +62,13 @@ class GameObject:
 
     def get_centre(self) -> tuple[float, float]:
         raise NotImplementedError
+
+
+class StaticObjectParams(TypedDict):
+    pos : tuple[float,float]
+    sprite_path : str
+    generate_hitbox : bool
+    hitbox : NotRequired[HitboxParams]
 
 
 class StaticObject(GameObject):
@@ -131,15 +149,34 @@ class StaticObject(GameObject):
     def generate_hitbox(self):
         self.hitbox = Hitbox.from_obj(self)
 
+    @staticmethod
+    def from_params(params : StaticObjectParams, sprite : pygame.Surface | None = None) -> StaticObject:
+        return StaticObject(
+            pos = params['pos'],
+            sprite = sprite,
+            generate_hitbox = params['generate_hitbox'],
+            hitbox = Hitbox.from_params(params['hitbox']) if params.get('hitbox') else None
+        )
+
+class MovingObjectParams(StaticObjectParams):
+    max_speed_x : float
+    max_speed_y : float
+    velocity_x : float
+    velocity_y : float
+    ground_friction_x : float
+    air_friction_x : float
+    air_friction_y : float
+    gravitate : bool
+
 
 class MovingObject(StaticObject):
-    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, gravitation : bool = False, generate_hitbox : bool = False, hitbox : Hitbox = None, ground_friction_x : float = 0, air_friction_x : float = 0, air_friction_y : float = 0):
+    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, gravitation : bool = False, generate_hitbox : bool = False, hitbox : Hitbox = None, ground_friction_x : float = 0, air_friction_x : float = 0, air_friction_y : float = 0, velocity_x : float = 0, velocity_y : float = 0):
         super().__init__(pos = pos,sprite= sprite, generate_hitbox= generate_hitbox, hitbox = hitbox)
         self.max_speed_x = speed_x
         self.max_speed_y = speed_y
 
-        self.velocity_x = 0
-        self.velocity_y = 0
+        self.velocity_x = velocity_x
+        self.velocity_y = velocity_y
 
         self.ground_friction_x = ground_friction_x
         self.air_friction_x = air_friction_x
@@ -204,10 +241,33 @@ class MovingObject(StaticObject):
     def air_friction_y(self, value: float) -> None:
         self._air_friction_y = value
 
+    @staticmethod
+    def from_params(params : MovingObjectParams, sprite : pygame.Surface | None = None) -> MovingObject:
+        return MovingObject(
+            pos = params['pos'],
+            sprite = sprite,
+            generate_hitbox = params['generate_hitbox'],
+            hitbox = Hitbox.from_params(params['hitbox']) if params.get('hitbox') else None,
+            gravitation = params['gravitate'],
+
+            speed_x = params['max_speed_x'],
+            speed_y = params['max_speed_y'],
+
+            velocity_x = params['velocity_x'],
+            velocity_y = params['velocity_y'],
+
+            ground_friction_x = params['ground_friction_x'],
+            air_friction_x = params['air_friction_x'],
+            air_friction_y = params['air_friction_y']
+        )
+
+class PlayerObjectParams(MovingObjectParams):
+    lives : int
+
 
 class Player(MovingObject):
-    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, ground_friction_x : float, air_friction_x : float, sprite : pygame.Surface = None, lives_count = 5, generate_hitbox : bool = False, hitbox : Hitbox = None):
-        super().__init__(pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = True, generate_hitbox= generate_hitbox, hitbox = hitbox, ground_friction_x = ground_friction_x, air_friction_x = air_friction_x)
+    def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, ground_friction_x : float, air_friction_x : float, air_friction_y : float = 0, sprite : pygame.Surface = None, lives_count = 5, generate_hitbox : bool = False, hitbox : Hitbox = None, velocity_x : float = 0, velocity_y : float = 0, gravitate : bool = True):
+        super().__init__(pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = gravitate, generate_hitbox= generate_hitbox, hitbox = hitbox, ground_friction_x = ground_friction_x, air_friction_x = air_friction_x, air_friction_y = air_friction_y, velocity_x = velocity_x, velocity_y = velocity_y)
 
         self.lives = lives_count
 
@@ -219,8 +279,31 @@ class Player(MovingObject):
     def lives(self, value: int) -> None:
         self._lives = value
 
+    @staticmethod
+    def from_params(params : PlayerObjectParams, sprite : pygame.Surface | None = None) -> Player:
+        return Player(
+            pos = params['pos'],
+            sprite = sprite,
+            generate_hitbox = params['generate_hitbox'],
+            hitbox = Hitbox.from_params(params['hitbox']) if params.get('hitbox') else None,
+
+            speed_x = params['max_speed_x'],
+            speed_y = params['max_speed_y'],
+
+            velocity_x = params['velocity_x'],
+            velocity_y = params['velocity_y'],
+
+            ground_friction_x = params['ground_friction_x'],
+            air_friction_x = params['air_friction_x'],
+            air_friction_y = params['air_friction_y'],
+
+            lives_count = params['lives']
+        )
+
 @dataclass
 class ObjectsContainer:
     def __init__(self):
         self.static_objects : list[StaticObject] = []
         self.moving_objects : list[MovingObject] = []
+
+#для params нужно сделать NotRequired, и чтобы создание учитывало это.

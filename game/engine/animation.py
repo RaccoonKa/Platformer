@@ -29,6 +29,9 @@ class AnimationEngine:
             self.updatable_objects.remove(obj)
 
     def add_anim(self, obj : StaticObject, animation_name : str, anim_delay : float, anim_list : list[pygame.Surface]) -> None:
+        if obj not in self.containers.keys():
+            self.add_object(obj)
+
         container = self.containers[obj]
         container.all_anims[animation_name] = {'delay' : anim_delay, 'list' : anim_list}
 

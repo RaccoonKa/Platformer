@@ -120,7 +120,9 @@ class ActivityManager:
                 continue
 
             obj_center = obj.get_centre()
-            if obj_center[0] - cam_x < self.activation_distance and obj_center[1] - cam_y < self.activation_distance:
+            dx = abs(obj_center[0] - cam_x)
+            dy = abs(obj_center[1] - cam_y)
+            if dx < self.activation_distance and dy < self.activation_distance:
                 self.active_objects.add(obj)
             elif obj in self.active_objects:
                 self.active_objects.remove(obj)

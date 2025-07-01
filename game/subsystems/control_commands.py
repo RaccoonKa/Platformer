@@ -66,9 +66,9 @@ class ExampleMouseButtonCommand(Command):
         if Hitbox.collide_detect(self.target,hb2):
             print("Зачем кликнул, йоу?")
 
-class BoolSwitchCommand(Command):
-    def __init__(self, target : bool):
-        self.target = target
-
-    def execute(self, dt : float) -> None:
-        self.target = not self.target
+# class BoolSwitchCommand(Command):
+#     def __init__(self, target : bool):
+#         self.target = target
+#
+#     def execute(self, dt : float) -> None:
+#         self.target = not self.target
