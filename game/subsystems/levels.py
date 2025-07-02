@@ -1,7 +1,10 @@
 from __future__ import annotations
+
+from os.path import commonpath
+
 import pygame
 import json
-import os
+
 from typing import TypedDict, NotRequired, Optional
 
 from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
@@ -10,12 +13,10 @@ from game.engine.render import Camera, CameraManager, Layer, LayerSystem, Activi
 from game.engine.physics import PhysicEngine
 from game.engine.animation import AnimationEngine
 from game.engine.control import InputHandler, Command
-from game.engine.script_system import ScriptingSystem, Script
+from game.engine.script_system import ScriptingSystem, ScriptParams, ScriptInfoParams, Script
 from game.engine.sound import SoundEngine
-
-from game.subsystems.control_commands import MoveLeftCommand, MoveRightCommand, JumpCommand, MousePositionCommand, \
-    ExampleMouseButtonCommand
-from game.subsystems.scripts import MarioChaseScript, Patrol, LogScript
+from game.subsystems.scripts import script_fabric_method
+from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
 
 
 class ObjectData(TypedDict):
@@ -44,14 +45,14 @@ class SoundData(TypedDict):
 
 class ScriptData(TypedDict):
     id : int
-    type : str
-    params : dict
+    info_params : ScriptInfoParams
 
 
 class BindData(TypedDict):
     id : int
-    type : str
-    params : dict
+    type : str #press, hold, release
+    key : int
+    command_script_id : int
 
 
 class CamBoxData(TypedDict):
@@ -64,7 +65,7 @@ class Level:
         self.size : tuple[int,int] = size
         self.g : float = g
 
-        self.objects : list[ObjectData] = list() #list[ObjectData | None] = list()
+        self.objects : list[ObjectData | None] = list()
         self.objects.append(None)
 
         self.cam_boxes: list[CamBoxData] = list()
@@ -146,7 +147,7 @@ class Level:
     def remove_sound(self, id_: int) -> None:
         self.sounds = [sound for sound in self.sounds if sound['id'] != id_]
 
-    def add_script(self, type_: str, params: dict) -> int:
+    def add_script(self, info_params: ScriptInfoParams) -> int:
         used_ids = {script['id'] for script in self.scripts}
         new_id = 0
         while new_id in used_ids:
@@ -154,8 +155,7 @@ class Level:
 
         script = ScriptData(
             id = new_id,
-            type=type_,
-            params=params
+            info_params = info_params
         )
 
         self.scripts.append(script)
@@ -165,7 +165,7 @@ class Level:
     def remove_script(self, id_: int) -> None:
         self.scripts = [script for script in self.scripts if script['id'] != id_]
 
-    def add_binds(self, type_: str, params: dict) -> int:
+    def add_binds(self, type_: str, key : int,command_script_id : int) -> int:
         used_ids = {bind['id'] for bind in self.binds}
         new_id = 0
         while new_id in used_ids:
@@ -174,7 +174,8 @@ class Level:
         bind = BindData(
             id=new_id,
             type=type_,
-            params=params
+            key = key,
+            command_script_id = command_script_id
         )
 
         self.binds.append(bind)
@@ -202,6 +203,7 @@ class Level:
     def remove_cam_box(self, id_: int) -> None:
         self.cam_boxes = [box for box in self.cam_boxes if box['id'] != id_]
 
+    # broken
     def save_to_file(self, filename: str) -> None:
         data = {
             'size': list(self.size),
@@ -217,6 +219,7 @@ class Level:
         with open(filename, 'w') as f:
             json.dump(data, f, indent=4)
 
+    # broken
     def load_from_file(self, filename: str) -> None:
         with open(filename, 'r') as f:
             data = json.load(f)
@@ -240,6 +243,7 @@ class Level:
         self.scripts = data.get('scripts', [])
         self.binds = data.get('binds', [])
 
+    # broken
     @staticmethod
     def _convert_positions(data: dict) -> None:
         if 'pos' in data:
@@ -268,6 +272,8 @@ class Game:
 
         self.objects : dict[int : Optional[StaticObject,MovingObject,Player]] = dict()
         self.layers : dict[int : Layer] = dict()
+        self.scripts: dict[int : Script] = dict()
+        self.binds : dict[int : Command] = dict()
 
         self.sprites : dict[str : pygame.Surface, None : None] = dict()
         self.sprites[None] = None
@@ -377,10 +383,26 @@ class Game:
             self.sound_engine.load_sound(data['filename'],data['filename'],data['volume'])
 
     def _load_scripts(self,level : Level):
-        ...
+        for data in level.scripts:
+            script = self._script_from_data(data['info_params'])
+            self.scripts[data['id']] = script
+            self.script_system.add_script(script)
 
     def _load_binds(self,level : Level):
-        ...
+        for data in level.binds:
+            script = self.scripts[data['command_script_id']]
+            if data['type'] == 'press':
+                command = PressCommand(script)
+            elif data['type'] == 'release':
+                command = ReleaseCommand(script)
+            elif data['type'] == 'hold':
+                command = HoldCommand(script)
+            else:
+                raise ValueError('bind data wrong type')
+
+            self.binds[data['id']] = command
+
+            self.input_manager.bind_key(key= data['key'], command = command, event_type = data['type'])
 
     def _object_from_data(self, class_type : str, params : Optional[StaticObjectParams, MovingObjectParams, PlayerObjectParams]) -> Optional[StaticObject, MovingObject, Player]:
         sprite = self._get_sprite(params['sprite_path'])
@@ -397,6 +419,32 @@ class Game:
 
         return self.sprites[sprite_path]
 
+    def _script_from_data(self, script_info : ScriptInfoParams) -> Script:
+        script_params = ScriptParams(
+            enabled = script_info.enabled,
+            systems = {
+                'layer_system': self.layer_system if script_info.systems['layer_system'] else None,
+                'camera_manager': self.camera_manager if script_info.systems['camera_manager'] else None,
+                'activity_manager': self.activity_manager if script_info.systems['activity_manager'] else None,
+                'physic_engine': self.physic_engine if script_info.systems['physic_engine'] else None,
+                'animation_engine': self.animation_engine if script_info.systems['animation_engine'] else None,
+                'sound_engine': self.sound_engine if script_info.systems['sound_engine'] else None,
+                'input_manager': self.input_manager if script_info.systems['input_manager'] else None,
+                'script_system': self.script_system if script_info.systems['script_system'] else None
+            },
+
+            objects = [
+                self.objects[id_] for id_ in script_info.objects
+            ],
+
+            scripts = [
+                self.scripts[id_] for id_ in script_info.scripts
+            ],
+            camera = self.camera,
+            clock = self.clock,
+            other = script_info.other
+        )
+        return script_fabric_method(script_info.type, script_params)
 
     def game_loop(self):
         self.exit = False
