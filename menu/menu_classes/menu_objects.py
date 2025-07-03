@@ -35,17 +35,17 @@ class Objects:
                                 self.special_sound.set_volume(sound_volume)
                                 self.special_sound.play()
                             self.special_counter = 0
-                            return
+                            return obj
                     if obj.sound:
                         obj.sound.set_volume(sound_volume)
                     obj.play_sound()
-                    return
-
+                    return obj
+        return None
 
 # Methods for objects
 class InteractiveObject:
-    def __init__(self, x, y, image=None, shape=None, width=100, height=100,
-                 color=(0, 0, 0), alpha=0, angle=0, sound_path=None):
+    def __init__(self, x, y, image = None, shape = None, width = 100, height = 100,
+                 color=(0, 0, 0), alpha = 0, angle = 0, sound_path = None, effect=None):
         self.x = x
         self.y = y
         self.width = width
@@ -61,6 +61,7 @@ class InteractiveObject:
         self.mask = None
         self.is_active = True
         self.sound_path = sound_path
+        self.effect = effect
 
         if sound_path:
             try:

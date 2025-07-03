@@ -57,6 +57,7 @@ pygame.display.set_caption("THE FOG")
 running = True
 clock = pygame.time.Clock()
 
+
 # Flags of activities
 glitch_effect = None
 show_text = True
@@ -68,6 +69,9 @@ settings_active = False
 authors_active = False
 game_start_active = False
 intro_text_finished = False
+comic_music = None
+comic_music_played = False
+comic_sound_playing = False
 current_state = "main_menu"
 selected_index = 0
 settings_alpha = 0
@@ -88,6 +92,12 @@ game_images_paths = [
 ]
 comic_positions = adjust_comic_position(GAME_WIDTH, GAME_HEIGHT)
 
+comic_music = pygame.mixer.Sound("assets(menu)/audio/comic/comic1.mp3")
+comic_music.set_volume(sound_volume)
+comic2_music = pygame.mixer.Sound("assets(menu)/audio/comic/comic2.mp3")
+comic2_music.set_volume(sound_volume)
+current_comic_music = None
+
 #Glith effect
 glitch_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/glitch.mp3")
 glitch_sound.set_volume(sound_volume)
@@ -103,6 +113,8 @@ for path in game_images_paths:
     img = pygame.image.load(path).convert_alpha()
     game_images.append(img)
 
+# Special effects
+coffee_effect = setup_secrets(objects_manager, GAME_WIDTH, GAME_HEIGHT)
 
 while running:
     for event in pygame.event.get():
@@ -152,7 +164,10 @@ while running:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 game_x = mouse_x * GAME_WIDTH / SCREEN_WIDTH
                 game_y = mouse_y * GAME_HEIGHT / SCREEN_HEIGHT
-                objects_manager.handle_event(event, (game_x, game_y), sound_volume)
+
+                clicked_obj = objects_manager.handle_event(event, (game_x, game_y), sound_volume)
+                if clicked_obj and clicked_obj.effect:
+                    clicked_obj.effect.next_image()
 
                 # Selecting a menu item
                 if menu_active:
@@ -311,7 +326,11 @@ while running:
                     # Click processing
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if next_button.bg_rect.collidepoint(game_x, game_y):
-                            if select_sound: select_sound.play()
+                            if select_sound:
+                                select_sound.play()
+                            if current_comic_music:
+                                current_comic_music.stop()
+                                current_comic_music = None
                             current_image_index += 1
                             if current_image_index > len(game_images):
                                 print("Starting actual game...")
@@ -328,7 +347,12 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key in [pygame.K_RETURN,
                                  pygame.K_SPACE] and current_image_index > 0:
-                    if select_sound: select_sound.play()
+                    if select_sound:
+                        select_sound.play()
+                    # Dialog processing
+                    if current_comic_music:
+                        current_comic_music.stop()
+                        current_comic_music = None
                     current_image_index += 1
                     if current_image_index > len(game_images):
                         print("Starting actual game...")
@@ -341,6 +365,10 @@ while running:
                         intro_text_alpha = 0
                         intro_text_finished = False
                 elif event.key == pygame.K_ESCAPE:
+                    # Dialog processing
+                    if current_comic_music:
+                        current_comic_music.stop()
+                        current_comic_music = None
                     current_state = "main_menu"
                     background_manager.start()
                     music.play_loop()
@@ -350,6 +378,28 @@ while running:
                     intro_text_alpha = 0
                     intro_text_finished = False
 
+        # Dialog status
+        if current_state != "game_start":
+            comic_sound_playing = False
+
+    # Sounds with comics
+    if current_state == "game_start":
+        if current_image_index == 1:
+            if not current_comic_music or current_comic_music != comic_music:
+                if current_comic_music:
+                    current_comic_music.stop()
+                current_comic_music = comic_music
+                current_comic_music.play()
+        elif current_image_index == 2:
+            if not current_comic_music or current_comic_music != comic2_music:
+                if current_comic_music:
+                    current_comic_music.stop()
+                current_comic_music = comic2_music
+                current_comic_music.play(-1)
+        elif current_image_index == 0 or current_image_index > len(game_images):
+            if current_comic_music:
+                current_comic_music.stop()
+                current_comic_music = None
 
     # Cleaner
     def clear_menus():
@@ -366,6 +416,10 @@ while running:
 
     if current_state in ["main_menu", "settings", "authors", "prepare_glitch"]:
         objects_manager.draw(game_surface)
+
+    # Secret objects
+    coffee_effect.draw(game_surface)
+    coffee_effect.resize_images(0.94)
 
     # Control game menu
     if show_text:
@@ -407,6 +461,11 @@ while running:
         sound_volume = sound_slider.get_value()
         switch_sound.set_volume(sound_volume)
         select_sound.set_volume(sound_volume)
+        glitch_sound.set_volume(sound_volume)
+        if comic_music:
+            comic_music.set_volume(sound_volume)
+        if comic2_music:
+            comic2_music.set_volume(sound_volume)
 
     if current_state == "settings":
         music_slider.set_active(selected_setting_index == 0)

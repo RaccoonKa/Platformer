@@ -1,7 +1,9 @@
 from menu_classes.menu_objects import InteractiveObject
+from menu_things.special_effects import CoffeeEffect
 
 
 def setup_secrets(objects_manager, GAME_WIDTH, GAME_HEIGHT):
+    coffee_effect = CoffeeEffect(GAME_WIDTH, GAME_HEIGHT)
     secrets = [
         InteractiveObject(
             x = GAME_WIDTH // 1.2 + 10,
@@ -79,7 +81,8 @@ def setup_secrets(objects_manager, GAME_WIDTH, GAME_HEIGHT):
             width = 180,
             height = 180,
             angle = 90,
-            sound_path = "assets(menu)/audio/secrets/coffee.mp3"
+            sound_path = "assets(menu)/audio/secrets/coffee.mp3",
+            effect = coffee_effect
         ),
         InteractiveObject(
             x = GAME_WIDTH // 13,
@@ -134,3 +137,5 @@ def setup_secrets(objects_manager, GAME_WIDTH, GAME_HEIGHT):
         objects_manager.add(obj)
         if idx in special_sounds:
             objects_manager.add_special(obj, special_sounds[idx])
+
+    return coffee_effect

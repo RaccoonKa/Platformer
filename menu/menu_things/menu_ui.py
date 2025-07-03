@@ -12,7 +12,7 @@ def create_intro(screen):
     animator.fade_in(intro, duration = 0)
     pygame.time.delay(0)
     animator.fade_out(intro, duration = 0)
-    
+
     return animator
 
 
@@ -182,8 +182,8 @@ def create_authors_elements(game_width, game_height):
             color = (255, 255, 255)
         ),
         Text(
-            text="...",
-            position=(game_width // 1.7, game_height // 2.7),
+            text="Philip Kudashev",
+            position=(game_width // 1.65 - 15, game_height // 2.65),
             font_path="assets(menu)/fonts/GNF/GNF.ttf",
             font_size=25,
             color=(255, 255, 255)
