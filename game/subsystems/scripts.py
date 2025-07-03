@@ -13,6 +13,16 @@ def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
             return MoveRightScript(params)
         case 'MoveLeftCommand':
             return MoveLeftScript(params)
+        case 'JumpCommand':
+            return JumpScript(params)
+        case 'ScriptSwitcher':
+            return ScriptSwitcher(params)
+        case 'FlagSwitch':
+            return FlagSwitchScript(params)
+        case 'PlaySound':
+            return PlaySoundScript(params)
+        case 'ChangeAnim':
+            return ChangeAnim(params)
         case _:
             return Script(params)
 
@@ -343,30 +353,243 @@ class MoveLeftScript(CommandScript):
         self.kill = True
 
 
-class JumpInfoParams(ScriptInfoParams): #todo
-    def __init__(self):
+class JumpInfoParams(ScriptInfoParams):
+    def __init__(self, obj_id : int, jump_speed : float, jump_sound : str):
         super().__init__()
         self.enabled = False
+        self.type = 'JumpCommand'
 
-class JumpScript(CommandScript): #todo
+        self.systems['sound_engine'] = True
+
+        self.objects.append(obj_id)
+
+        self.other = {
+            'jump_speed' : jump_speed,
+            'jump_sound' : jump_sound
+        }
+        #self.other['jump_anim'] = jump_anim
+
+class JumpScript(CommandScript):
     def __init__(self, params : ScriptParams):
         super().__init__(params)
 
+        self.obj = params['objects'][0]
+        self.sound_engine = params['systems']['sound_engine']
+
+
+        other = params['other']
+        self.jump_sound = other['jump_sound']
+        self.jump_speed = other['jump_speed']
+
     def start(self) -> None:
-        ...
+        if self.obj.is_grounded:
+            self.obj.velocity_y = max(-self.jump_speed, -self.obj.max_speed_y)
+
+            self.sound_engine.play_sound(self.jump_sound)
+
+            self.obj.is_grounded = False
+            self.enabled = True
+
 
     def on_execute(self, dt : float, press : bool = False,hold : bool = False, release : bool = False) -> None:
-        ...
+        if hold:
+            self.start()
 
     def update(self, dt: float) -> None:
-        ...
+        if self.obj.is_grounded:
+            self.stop()
 
     def stop(self) -> None:
-        ...
+        self.enabled = False
 
     def destroy(self) -> None:
         self.kill = True
 
+
+class ScriptSwitcherInfoParams(ScriptInfoParams):
+    def __init__(self, scripts_switch_ids : list[int] = None,
+                 scripts_toggle_on_ids : list[int] = None, scripts_toggle_off_ids : list[int] = None, enabled : bool = True):
+        super().__init__()
+        self.type = 'ScriptSwitcher'
+        self.enabled = enabled
+
+        if scripts_switch_ids:
+            self.scripts += scripts_switch_ids
+        if scripts_toggle_on_ids:
+            self.scripts += scripts_toggle_on_ids
+        if scripts_toggle_off_ids:
+            self.scripts += scripts_toggle_off_ids
+
+        self.other = {
+            "switch" : len(scripts_switch_ids) if scripts_switch_ids else 0,
+            "toggle_on" : len(scripts_toggle_on_ids) if scripts_toggle_on_ids else 0,
+            "toggle_off" : len(scripts_toggle_off_ids) if scripts_toggle_off_ids else 0
+        }
+
+class ScriptSwitcher(Script):
+    def __init__(self, params : ScriptParams):
+        super().__init__(params)
+
+        all_scripts = params['scripts']
+        other = params['other']
+
+        self.scripts_switch : list[Script] = all_scripts[0:other['switch']]
+        self.scripts_toggle_on : list[Script] = all_scripts[other['switch']:other['switch']+other['toggle_on']]
+        self.scripts_toggle_off : list[Script] = all_scripts[other['switch']+other['toggle_on'] : other['switch']+other['toggle_on'] + other['toggle_off']]
+
+        self.need_switch = False
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        if self.need_switch:
+            self.switch()
+            self.need_switch = False
+
+    def switch(self):
+        for script in self.scripts_switch:
+            if script.enabled:
+                script.stop()
+            else:
+                script.start()
+        for script in self.scripts_toggle_on:
+            script.start()
+        for script in self.scripts_toggle_off:
+            script.stop()
+
+
+class FlagSwitchInfoParams(ScriptInfoParams):
+    def __init__(self, flag_obj_id : int, target_obj_id : int, switcher_id : int, enabled : bool = True):
+        super().__init__()
+        self.enabled = enabled
+        self.type = "FlagSwitch"
+
+        self.objects = [flag_obj_id, target_obj_id]
+        self.scripts = [switcher_id]
+
+class FlagSwitchScript(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.flag_obj = params['objects'][0]
+        self.target_obj = params['objects'][1]
+
+        self.switcher = params['scripts'][0]
+
+        self.target_in_zone = False
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        collide = self.flag_obj.hitbox.is_collide(self.target_obj)
+
+        if collide and not self.target_in_zone:
+            self.target_in_zone = True
+            self.switcher.need_switch = True
+        if not collide and self.target_in_zone:
+            self.target_in_zone = False
+
+
+class ClickSwitchScript(Script):
+    ...
+
+class TimeSwitchScript(Script):
+    ...
+
+class TimeFlagSwitchScript(Script):
+    ...
+
+
+class PlaySoundInfoParams(ScriptInfoParams):
+    def __init__(self, sound : str, loops : int = 0 , volume : float = None):
+        super().__init__()
+        self.type = "PlaySound"
+        self.systems['sound_engine'] = True
+
+        self.other = {
+            'sound' : sound,
+            'loops' : loops,
+            'volume' : volume
+        }
+
+class PlaySoundScript(Script):
+    def __init__(self, params : ScriptParams):
+        super().__init__(params)
+
+        self.sound_engine = params['systems']['sound_engine']
+
+        other = params['other']
+        self.sound = other['sound']
+        self.loops = other['loops']
+        self.volume = other['volume']
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        self.sound_engine.play_sound(name = self.sound, loops = self.loops, volume = self.volume)
+        self.stop()
+
+
+class ChangeAnimInfoParams(ScriptInfoParams):
+    def __init__(self, target_id : int, animation_name : str, cycle : bool = True, enabled = False):
+        super().__init__()
+        self.enabled = enabled
+        self.type = 'ChangeAnim'
+
+        self.systems['animation_engine'] = True
+
+        self.objects.append(target_id)
+        self.other = {
+            'name' : animation_name,
+            'cycle' : cycle
+        }
+
+class ChangeAnim(Script):
+    def __init__(self, params : ScriptParams):
+        super().__init__(params)
+
+        self.animation_engine = params['systems']['animation_engine']
+
+        self.target = params['objects'][0]
+
+        other = params['other']
+        self.anim_name = other['name']
+        self.cycle = other['cycle']
+
+    def start(self) -> None:
+        self.animation_engine.switch_anim(obj= self.target, animation_name= self.anim_name, play_now= True, cycle = self.cycle)
+        self.enabled = True
+
+    def stop(self) -> None:
+        self.animation_engine.turn_off(obj = self.target)
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        pass
+
+    def destroy(self) -> None:
+        self.kill = True
 # params:
 #
 # layer_system

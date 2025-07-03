@@ -5,7 +5,7 @@ from os.path import commonpath
 import pygame
 import json
 
-from typing import TypedDict, NotRequired, Optional
+from typing import TypedDict, NotRequired, Optional, Any
 
 from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
 from game.engine.objects import StaticObjectParams, MovingObjectParams, PlayerObjectParams, HitboxParams
@@ -17,6 +17,42 @@ from game.engine.script_system import ScriptingSystem, ScriptParams, ScriptInfoP
 from game.engine.sound import SoundEngine
 from game.subsystems.scripts import script_fabric_method
 from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
+
+
+class GameEncoder(json.JSONEncoder):
+
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, tuple):
+            return {'__tuple__': True, 'items': list(obj)}
+
+        if hasattr(obj, '__dict__'):
+            return {
+                '__class__': obj.__class__.__name__,
+                'module': obj.__class__.__module__,
+                'data': obj.__dict__
+            }
+
+        return super().default(obj)
+
+
+def game_hook(obj: dict) -> Any:
+    if '__tuple__' in obj:
+        return tuple(obj['items'])
+
+    if '__class__' in obj:
+        class_name = obj['__class__']
+        module_name = obj['module']
+
+        try:
+            module = __import__(module_name, fromlist=[class_name])
+            klass = getattr(module, class_name)
+            instance = klass.__new__(klass)
+            instance.__dict__.update(obj['data'])
+            return instance
+        except (ImportError, AttributeError):
+            return obj
+
+    return obj
 
 
 class ObjectData(TypedDict):
@@ -203,10 +239,9 @@ class Level:
     def remove_cam_box(self, id_: int) -> None:
         self.cam_boxes = [box for box in self.cam_boxes if box['id'] != id_]
 
-    # broken
     def save_to_file(self, filename: str) -> None:
         data = {
-            'size': list(self.size),
+            'size': self.size,
             'g': self.g,
             'objects': self.objects,
             'animations': self.animations,
@@ -217,39 +252,20 @@ class Level:
         }
 
         with open(filename, 'w') as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, indent=4, cls=GameEncoder)
 
-    # broken
     def load_from_file(self, filename: str) -> None:
         with open(filename, 'r') as f:
-            data = json.load(f)
+            data = json.load(f, object_hook=game_hook)
 
-        self.size = tuple(data['size'])
+        self.size = data['size']
         self.g = data['g']
-
-        self.objects = []
-        for obj in data.get('objects', []):
-            params = obj['params']
-            self._convert_positions(params)
-            self.objects.append(obj)
-
-        self.cam_boxes = []
-        for box in data.get('cam_boxes', []):
-            self._convert_positions(box['hitbox'])
-            self.cam_boxes.append(box)
-
+        self.objects = data.get('objects', [])
+        self.cam_boxes = data.get('cam_boxes', [])
         self.animations = data.get('animations', [])
         self.sounds = data.get('sounds', [])
         self.scripts = data.get('scripts', [])
         self.binds = data.get('binds', [])
-
-    # broken
-    @staticmethod
-    def _convert_positions(data: dict) -> None:
-        if 'pos' in data:
-            data['pos'] = tuple(data['pos'])
-        if 'size' in data:
-            data['size'] = tuple(data['size'])
 
 class Game:
     def __init__(self, screen : pygame.Surface, screen_size : tuple[int,int], clock : pygame.time.Clock, max_fps : float = 0):
@@ -391,18 +407,30 @@ class Game:
     def _load_binds(self,level : Level):
         for data in level.binds:
             script = self.scripts[data['command_script_id']]
+            mouse = False
             if data['type'] == 'press':
                 command = PressCommand(script)
             elif data['type'] == 'release':
                 command = ReleaseCommand(script)
             elif data['type'] == 'hold':
                 command = HoldCommand(script)
+            elif data['type'] == 'mouse_press':
+                command = PressCommand(script)
+                mouse = True
+            elif data['type'] == 'mouse_release':
+                command = ReleaseCommand(script)
+                mouse = True
+            elif data['type'] == 'mouse_hold':
+                command = HoldCommand(script)
+                mouse = True
             else:
                 raise ValueError('bind data wrong type')
 
             self.binds[data['id']] = command
-
-            self.input_manager.bind_key(key= data['key'], command = command, event_type = data['type'])
+            if mouse:
+                self.input_manager.bind_mouse_button(button = data['key'],command= command, event_type = data['type'].replace('mouse_',''))
+            else:
+                self.input_manager.bind_key(key= data['key'], command = command, event_type = data['type'])
 
     def _object_from_data(self, class_type : str, params : Optional[StaticObjectParams, MovingObjectParams, PlayerObjectParams]) -> Optional[StaticObject, MovingObject, Player]:
         sprite = self._get_sprite(params['sprite_path'])

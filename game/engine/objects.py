@@ -35,6 +35,14 @@ class Hitbox:
     def y(self, value: float) -> None:
         self._y = value
 
+    def is_collide(self, other : Hitbox):
+        if not other:
+            return False
+        return (self.x < other.x + other.size[0] and
+                self.x + self.size[0] > other.x and
+                self.y < other.y + other.size[1] and
+                self.y + self.size[1] > other.y)
+
     @staticmethod
     def collide_detect(hb1: Hitbox, hb2: Hitbox) -> bool:
         if not hb1 or not hb2:
