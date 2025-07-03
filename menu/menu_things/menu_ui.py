@@ -7,17 +7,12 @@ from menu_classes.menu_music import Slider
 
 def create_intro(screen):
     animator = FadeAnimation(screen)
-    try:
-        intro = pygame.image.load("assets(menu)/pictures/intro/intro.png").convert_alpha()
-        intro = pygame.transform.scale(intro, (600, 600))
-    except pygame.error:
-        print("Error loading intro image")
-        intro = pygame.Surface((600, 600))
-        intro.fill((0, 0, 0))
-
+    intro = pygame.image.load("assets(menu)/pictures/intro/intro.png").convert_alpha()
+    intro = pygame.transform.scale(intro, (600, 600))
     animator.fade_in(intro, duration = 0)
     pygame.time.delay(0)
     animator.fade_out(intro, duration = 0)
+    
     return animator
 
 
