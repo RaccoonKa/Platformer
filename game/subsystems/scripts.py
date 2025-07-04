@@ -495,7 +495,7 @@ class FlagSwitchScript(Script):
         self.enabled = True
 
     def update(self, dt: float) -> None:
-        collide = self.flag_obj.hitbox.is_collide(self.target_obj)
+        collide = self.flag_obj.hitbox.is_collide(self.target_obj.hitbox)
 
         if collide and not self.target_in_zone:
             self.target_in_zone = True

@@ -1,12 +1,12 @@
 from __future__ import annotations
 import pygame
-from dataclasses import dataclass
 from typing import TypedDict, NotRequired
 
 
 class HitboxParams(TypedDict):
-    pos : tuple[float,float]
+    pos : NotRequired[tuple[float,float]]
     size : tuple[int,int]
+    offset : NotRequired[tuple[float,float]]
 
 
 class Hitbox:
@@ -86,28 +86,25 @@ class GameObject:
         raise NotImplementedError
 
 
+class StaticObjectInfoParams(TypedDict):
+    pos : tuple[float,float]
+    sprite_id : NotRequired[int]
+    hitbox_id : NotRequired[HitboxParams]
+
 class StaticObjectParams(TypedDict):
     pos : tuple[float,float]
-    sprite_path : NotRequired[str]
-    generate_hitbox : NotRequired[bool]
-    hitbox : NotRequired[HitboxParams]
-    size : NotRequired[tuple[int,int]]
-
+    size : tuple[int,int]
+    sprite : pygame.Surface
+    hitbox : Hitbox
 
 class StaticObject(GameObject):
-    def __init__(self, pos : tuple[float,float], sprite : pygame.Surface = None, generate_hitbox : bool = False, size : tuple[int,int] = None, hitbox : Hitbox = None):
+    def __init__(self, pos : tuple[float,float], sprite : pygame.Surface = None, generate_hitbox : bool = False, size : tuple[int,int] = (0,0), hitbox : Hitbox = None):
         super().__init__()
         self.x = pos[0]
         self.y = pos[1]
 
-        if size:
-            self.size = size
-        if sprite:
-            if size:
-                self.sprite = pygame.transform.scale(sprite,self.size)
-            else:
-                self.sprite = sprite
-                self.size = sprite.get_size()
+        self.size = size
+        self.sprite = sprite
 
         if generate_hitbox:
             self.hitbox = Hitbox.from_obj(self)
@@ -115,6 +112,10 @@ class StaticObject(GameObject):
             self.hitbox = hitbox
         else:
             self.hitbox = None
+
+    @classmethod
+    def from_params(cls, params : StaticObjectParams) -> StaticObject:
+        return cls(pos = params['pos'], sprite = params['sprite'], hitbox = params['hitbox'], size = params['size'])
 
     @property
     def x(self)->float:
@@ -156,6 +157,18 @@ class StaticObject(GameObject):
     def hitbox(self, hitbox : Hitbox) -> None:
         self._hitbox = hitbox
 
+    def get_hitbox_offset(self) -> tuple[float,float]:
+        return self.x - self.hitbox.x, self.y - self.hitbox.y
+
+    def set_hitbox_by_params(self, hb_params : HitboxParams):
+        if hb_params:
+            self.hitbox = Hitbox(
+                pos = (self.x + hb_params['offset'][0],self.y + hb_params['offset'][1]),
+                size = hb_params['size']
+            )
+        else:
+            return
+
     def __int__(self) -> int:
         return int(self.x)
 
@@ -168,9 +181,6 @@ class StaticObject(GameObject):
         self.size = size
         if self.sprite:
             self.sprite = pygame.transform.scale(self.sprite,size)
-
-    def change_sprite(self, sprite : pygame.Surface, change_size : bool = True):
-        ...
 
     def get_pos(self) -> tuple[float,float]:
         return self.x, self.y
@@ -188,17 +198,8 @@ class StaticObject(GameObject):
     def generate_hitbox(self):
         self.hitbox = Hitbox.from_obj(self)
 
-    @staticmethod
-    def from_params(params : StaticObjectParams, sprite : pygame.Surface | None = None) -> StaticObject:
-        return StaticObject(
-            pos = params['pos'],
-            sprite = sprite,
-            generate_hitbox = params['generate_hitbox'] if params.get('generate_hitbox') else False,
-            hitbox = Hitbox.from_params(params['hitbox']) if params.get('hitbox') else None,
-            size = params['size'] if params.get('size') else None
-        )
 
-class MovingObjectParams(StaticObjectParams):
+class MovingObjectInfoParams(StaticObjectInfoParams):
     max_speed_x : float
     max_speed_y : float
     velocity_x : NotRequired[float]
@@ -208,6 +209,15 @@ class MovingObjectParams(StaticObjectParams):
     air_friction_y : NotRequired[float]
     gravitate : bool
 
+class MovingObjectParams(StaticObjectParams):
+    max_speed_x: float
+    max_speed_y: float
+    velocity_x: NotRequired[float]
+    velocity_y: NotRequired[float]
+    ground_friction_x: float
+    air_friction_x: NotRequired[float]
+    air_friction_y: NotRequired[float]
+    gravitate: bool
 
 class MovingObject(StaticObject):
     def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, sprite : pygame.Surface = None, gravitation : bool = False, generate_hitbox : bool = False, hitbox : Hitbox = None, ground_friction_x : float = 0, air_friction_x : float = 0, air_friction_y : float = 0, velocity_x : float = 0, velocity_y : float = 0, size : tuple[int,int] = None):
@@ -224,6 +234,23 @@ class MovingObject(StaticObject):
 
         self.is_gravitate = gravitation
         self.is_grounded = False
+
+    @classmethod
+    def from_params(cls, params : MovingObjectParams):
+        return cls(pos = params['pos'], sprite = params['sprite'], hitbox = params['hitbox'],size = params['size'],
+
+                   speed_x=params['max_speed_x'],
+                   speed_y=params['max_speed_y'],
+
+                   velocity_x=params['velocity_x'] if params.get('velocity_x') else 0,
+                   velocity_y=params['velocity_y'] if params.get('velocity_y') else 0,
+
+                   ground_friction_x=params['ground_friction_x'] if params.get('ground_friction_x') else 0,
+                   air_friction_x=params['air_friction_x'] if params.get('air_friction_x') else 0,
+                   air_friction_y=params['air_friction_y'] if params.get('air_friction_y') else 0,
+
+                   gravitation=params['gravitate'] if params.get('gravitate') else False
+                   )
 
     @property
     def max_speed_x(self) -> float:
@@ -281,37 +308,37 @@ class MovingObject(StaticObject):
     def air_friction_y(self, value: float) -> None:
         self._air_friction_y = value
 
-    @staticmethod
-    def from_params(params : MovingObjectParams, sprite : pygame.Surface | None = None) -> MovingObject:
-        return MovingObject(
-            pos = params['pos'],
-            sprite = sprite,
-            generate_hitbox = params['generate_hitbox'] if params.get('generate_hitbox') else False,
-            hitbox = Hitbox.from_params(params['hitbox']) if params.get('hitbox') else None,
-            size = params['size'] if params.get('size') else None,
 
-            speed_x = params['max_speed_x'],
-            speed_y = params['max_speed_y'],
-
-            velocity_x = params['velocity_x'] if params.get('velocity_x') else 0,
-            velocity_y = params['velocity_y'] if params.get('velocity_y') else 0,
-
-            ground_friction_x = params['ground_friction_x'] if params.get('ground_friction_x') else 0,
-            air_friction_x = params['air_friction_x'] if params.get('air_friction_x') else 0,
-            air_friction_y = params['air_friction_y'] if params.get('air_friction_y') else 0,
-
-            gravitation = params['gravitate'] if params.get('gravitate') else False
-        )
+class PlayerObjectInfoParams(MovingObjectInfoParams):
+    lives : int
 
 class PlayerObjectParams(MovingObjectParams):
     lives : int
 
-
 class Player(MovingObject):
     def __init__(self, pos : tuple[float, float], speed_x : float, speed_y : float, ground_friction_x : float, air_friction_x : float, air_friction_y : float = 0, sprite : pygame.Surface = None, lives_count = 5, generate_hitbox : bool = False, hitbox : Hitbox = None, velocity_x : float = 0, velocity_y : float = 0, gravitation : bool = True, size : tuple[int,int] = None):
-        super().__init__(pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = gravitation, generate_hitbox= generate_hitbox, hitbox = hitbox, ground_friction_x = ground_friction_x, air_friction_x = air_friction_x, air_friction_y = air_friction_y, velocity_x = velocity_x, velocity_y = velocity_y, size=size)
+        super().__init__(pos = pos, speed_x= speed_x, speed_y= speed_y, sprite = sprite, gravitation = gravitation, generate_hitbox= generate_hitbox, hitbox = hitbox, ground_friction_x = ground_friction_x, air_friction_x = air_friction_x, air_friction_y = air_friction_y, velocity_x = velocity_x, velocity_y = velocity_y, size = size)
 
         self.lives = lives_count
+
+    @classmethod
+    def from_params(cls, params: PlayerObjectParams):
+        return cls(pos=params['pos'], sprite=params['sprite'], hitbox=params['hitbox'],size = params['size'],
+
+                   speed_x=params['max_speed_x'],
+                   speed_y=params['max_speed_y'],
+
+                   velocity_x=params['velocity_x'] if params.get('velocity_x') else 0,
+                   velocity_y=params['velocity_y'] if params.get('velocity_y') else 0,
+
+                   ground_friction_x=params['ground_friction_x'] if params.get('ground_friction_x') else 0,
+                   air_friction_x=params['air_friction_x'] if params.get('air_friction_x') else 0,
+                   air_friction_y=params['air_friction_y'] if params.get('air_friction_y') else 0,
+
+                   gravitation=params['gravitate'] if params.get('gravitate') else True,
+
+                   lives_count= params['lives']
+                   )
 
     @property
     def lives(self) -> int:
@@ -320,35 +347,3 @@ class Player(MovingObject):
     @lives.setter
     def lives(self, value: int) -> None:
         self._lives = value
-
-    @staticmethod
-    def from_params(params : PlayerObjectParams, sprite : pygame.Surface | None = None) -> Player:
-        return Player(
-            pos=params['pos'],
-            sprite=sprite,
-            generate_hitbox=params['generate_hitbox'] if params.get('generate_hitbox') else False,
-            hitbox=Hitbox.from_params(params['hitbox']) if params.get('hitbox') else None,
-            size=params['size'] if params.get('size') else None,
-
-            speed_x=params['max_speed_x'],
-            speed_y=params['max_speed_y'],
-
-            velocity_x=params['velocity_x'] if params.get('velocity_x') else 0,
-            velocity_y=params['velocity_y'] if params.get('velocity_y') else 0,
-
-            ground_friction_x=params['ground_friction_x'] if params.get('ground_friction_x') else 0,
-            air_friction_x=params['air_friction_x'] if params.get('air_friction_x') else 0,
-            air_friction_y=params['air_friction_y'] if params.get('air_friction_y') else 0,
-
-            gravitation=params['gravitate'] if params.get('gravitate') else True,
-
-            lives_count = params['lives']
-        )
-
-@dataclass
-class ObjectsContainer:
-    def __init__(self):
-        self.static_objects : list[StaticObject] = []
-        self.moving_objects : list[MovingObject] = []
-
-#для params нужно сделать NotRequired, и чтобы создание учитывало это.

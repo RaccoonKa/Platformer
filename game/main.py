@@ -6,19 +6,23 @@ from game.subsystems.scripts import LogInfoParams, MarioChaseInfoParams, PatrolI
     PlaySoundInfoParams, ChangeAnimInfoParams
 from game.subsystems.levels import Game, Level
 
-from game.engine.objects import StaticObjectParams, MovingObjectParams, PlayerObjectParams, HitboxParams
+from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams, HitboxParams
 
 
 def create_test_level()-> Level:
     level = Level()
     level.size = (5000,1080)
 
+    player_sprite_id = level.add_sprite(
+        path = 'assets/character/char0.png'
+    )
+
     #player
     player_id = level.set_player(
-        params=PlayerObjectParams(
+        params=PlayerObjectInfoParams(
             pos = (0,0),
-            sprite_path = "assets/character/char0.png",
-            generate_hitbox = True,
+            sprite_id = player_sprite_id,
+
             max_speed_x = 10*16,
             max_speed_y = 20*16,
             ground_friction_x = 3,
@@ -27,7 +31,8 @@ def create_test_level()-> Level:
             gravitate = True,
             velocity_x = 0,
             velocity_y = 0,
-            lives = 5,
+
+            lives = 5
         ),
         physics = True,
         physics_type = 'Stoppable',
@@ -35,13 +40,12 @@ def create_test_level()-> Level:
         force_active = True
     )
 
-    mario_sprite = "assets/character/mario.png"
+    mario_sprite_id = level.add_sprite("assets/character/mario.png")
     #mario1
     mario_id = level.add_object(
-        params= MovingObjectParams(
+        params= MovingObjectInfoParams(
             pos = (30, 1080-70-70-70-70-35),
-            sprite_path= mario_sprite,
-            generate_hitbox= True,
+            sprite_id = mario_sprite_id,
             max_speed_x= 5*16,
             max_speed_y=20*16,
             gravitate= True,
@@ -60,10 +64,9 @@ def create_test_level()-> Level:
 
     #mario2
     mario2_id = level.add_object(
-        params=MovingObjectParams(
+        params=MovingObjectInfoParams(
             pos=(1500, 1080 - 70 - 70 - 70),
-            sprite_path=mario_sprite,
-            generate_hitbox=True,
+            sprite_id=mario_sprite_id,
             max_speed_x=10 * 16,
             max_speed_y=20 * 16,
             gravitate=True,
@@ -80,30 +83,33 @@ def create_test_level()-> Level:
         class_type='Moving'
     )
 
+    background_sprite_id = level.add_sprite("assets/background/background.png",)
+
     #background
     level.add_object(
         class_type="Static",
         physics=False,
         layer=0,
-        params=StaticObjectParams(
+        need_hitbox= False,
+        params=StaticObjectInfoParams(
             pos=(0, 0),
-            sprite_path="assets/background/background.png",
-            generate_hitbox=False
+            sprite_id=background_sprite_id
         )
+
     )
 
+    brick_sprite_id = level.add_sprite("assets/test/brick.png")
+
     #ground
-    brick_path = "assets/test/brick.png"
     for i in range(73):
         level.add_object(
             class_type = "Static",
             physics = True,
             physics_type = "Static",
             layer = 1,
-            params = StaticObjectParams(
+            params = StaticObjectInfoParams(
                 pos = (i * 70, 1080-35),
-                sprite_path = brick_path,
-                generate_hitbox = True
+                sprite_id = brick_sprite_id
             )
         )
 
@@ -116,10 +122,9 @@ def create_test_level()-> Level:
                     physics=True,
                     physics_type="Static",
                     layer=1,
-                    params=StaticObjectParams(
+                    params=StaticObjectInfoParams(
                         pos=(i,j),
-                        sprite_path=brick_path,
-                        generate_hitbox=True
+                        sprite_id = brick_sprite_id
                     )
                 )
 
@@ -129,14 +134,14 @@ def create_test_level()-> Level:
         physics = True,
         physics_type = "Unstoppable",
         layer=1,
-        params= MovingObjectParams
+        params= MovingObjectInfoParams
         (
             pos = (-200, 1080-70-70-70-70-35),
+            sprite_id= brick_sprite_id,
+
             max_speed_x = 5*16,
             max_speed_y = 5*16,
-            sprite_path = brick_path,
             gravitate = False,
-            generate_hitbox = True,
             velocity_x = 25,
             velocity_y = -5,
             ground_friction_x=0,
@@ -153,16 +158,18 @@ def create_test_level()-> Level:
         )
     )
 
+    flag_sprite_id = level.add_sprite('assets/test/flagbox.png')
+
     #flag
     flag_id = level.add_object(
         class_type = "Static",
         physics = False,
         force_active = False,
         layer = 1,
-        params= StaticObjectParams(
+        need_hitbox= True,
+        params= StaticObjectInfoParams(
             pos = (70,1080-500),
-            sprite_path = "assets/test/flagbox.png",
-            generate_hitbox = True
+            sprite_id = flag_sprite_id
         )
     )
 
@@ -170,13 +177,16 @@ def create_test_level()-> Level:
     zombie_path = "assets/sound/zombie.mp3"
 
     anim_name = 'rotate'
+
+    anim_sprite_id1 = level.add_sprite("assets/character/char0.png", size=(100,100))
+    anim_sprite_id2 = level.add_sprite("assets/character/char1.png", size=(100,100))
+
     level.add_animation(
-        object_id= player_id,
-        name = anim_name,
-        delay = 2,
-        frames=['assets/character/char0.png','assets/character/char1.png'],
-        change_size= True,
-        frames_size=[(100,100),(50,50)],
+        object_id=player_id,
+        name=anim_name,
+        delay=2,
+        frames_ids=[anim_sprite_id1, anim_sprite_id2],
+        change_hitboxes= True
     )
 
     level.add_sound('sound', jump_sound_path,0.1)
@@ -228,11 +238,10 @@ def test2()-> None:
     level.load_from_file("saves/level1.json")
 
     game = Game(screen,screen_size,clock,max_fps)
+
     game.load_level(level)
 
     game.game_loop()
 
 if __name__ == "__main__":
     test2()
-
-#sprite = pygame.transform.scale(sprite,(10,10))

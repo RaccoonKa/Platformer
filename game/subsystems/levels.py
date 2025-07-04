@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from os.path import commonpath
-
 import pygame
 import json
 
@@ -9,6 +7,7 @@ from typing import TypedDict, NotRequired, Optional, Any
 
 from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
 from game.engine.objects import StaticObjectParams, MovingObjectParams, PlayerObjectParams, HitboxParams
+from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams
 from game.engine.render import Camera, CameraManager, Layer, LayerSystem, ActivityManager
 from game.engine.physics import PhysicEngine
 from game.engine.animation import AnimationEngine
@@ -20,7 +19,6 @@ from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseC
 
 
 class GameEncoder(json.JSONEncoder):
-
     def default(self, obj: Any) -> Any:
         if isinstance(obj, tuple):
             return {'__tuple__': True, 'items': list(obj)}
@@ -61,16 +59,17 @@ class ObjectData(TypedDict):
     physics : bool
     physic_type : NotRequired[str]
     layer : NotRequired[int]
-    params : Optional[StaticObjectParams, MovingObjectParams, PlayerObjectParams]
     force_active: bool
+    need_hitbox : bool
+    params : Optional[StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams]
 
 
 class AnimationData(TypedDict):
-    object_id : int
-    name : str
-    change_size : bool
-    delay : float
-    frames : list[str] #list[sprite_path]
+    object_id: int
+    name: str
+    delay: float
+    frames: list[int]  # ID спрайтов
+    change_hitboxes : bool
 
 
 class SoundData(TypedDict):
@@ -97,10 +96,25 @@ class CamBoxData(TypedDict):
     hitbox : HitboxParams
 
 
+class HitboxData(TypedDict):
+    id : int
+    hitbox : HitboxParams
+
+
+class SpriteData(TypedDict):
+    id : int
+    sprite_path : str
+    sprite_size : tuple[int,int]
+    hitbox_id : int
+
+
 class Level:
     def __init__(self, size : tuple[int,int] = (0,0), g : float = 9.8*16):
         self.size : tuple[int,int] = size
         self.g : float = g
+
+        self.sprites : list[SpriteData] = list()
+        self.hitboxes : list[HitboxData] = list()
 
         self.objects : list[ObjectData | None] = list()
         self.objects.append(None)
@@ -111,24 +125,76 @@ class Level:
         self.scripts : list[ScriptData] = list()
         self.binds : list[BindData] = list()
 
-    def set_player(self, params : PlayerObjectParams, layer : int = None, physics : bool = True, physics_type : str = 'Stoppable', force_active : bool = True) -> int:
+    def _add_hitbox(self, size : tuple[int,int], pos : tuple[float,float] = None, offset : tuple[float,float] = (0,0)) -> int:
+        params = HitboxParams(
+                pos = pos,
+                size = size,
+                offset = offset
+            )
+
+        for id_ in range(len(self.hitboxes)):
+            if self.hitboxes[id_]['hitbox'] == params:
+                return id_
+
+        used_ids = {obj['id'] for obj in self.hitboxes}
+        new_id = 0
+        while new_id in used_ids:
+            new_id += 1
+
+        data = HitboxData(
+            id = new_id,
+            hitbox = params
+        )
+
+        self.hitboxes.append(data)
+        return new_id
+
+    def _remove_hitbox(self, id_ : int) -> None:
+        self.hitboxes = [hb for hb in self.hitboxes if hb['id'] != id_]
+
+    def add_sprite(self, path : str, size : tuple[int, int] = None, hb_size : tuple[int, int] = None, hb_offset : tuple[float,float] = (0,0)) -> int:
+        used_ids = {obj['id'] for obj in self.sprites}
+        new_id = 0
+        while new_id in used_ids:
+            new_id += 1
+
+        if not size:
+            sprite = pygame.image.load(path)
+            size = sprite.get_size()
+
+        hb_id = self._add_hitbox(size = hb_size if hb_size else size, offset = hb_offset)
+
+        data = SpriteData(
+            id = new_id,
+            sprite_path = path,
+            sprite_size = size,
+            hitbox_id = hb_id
+        )
+
+        self.sprites.append(data)
+        return new_id
+
+    def remove_sprite(self, id_ : int) -> None:
+        self.sprites = [sprite for sprite in self.sprites if sprite['id'] != id_]
+
+    def set_player(self, params : PlayerObjectInfoParams, layer : int = None, physics : bool = True, physics_type : str = 'Stoppable', force_active : bool = True, need_hitbox = True) -> int:
         data = ObjectData(
             id = 0,
-            class_type = 'player',
+            class_type = 'Player',
             physics = physics,
             params = params,
             layer = layer,
             physic_type = physics_type,
-            force_active = force_active
+            force_active = force_active,
+            need_hitbox= need_hitbox
         )
         self.objects[0] = data
-
         return 0
 
     def remove_player(self) -> None:
         self.objects[0] = None
 
-    def add_object(self, class_type : str, physics : bool, params : Optional[StaticObjectParams, MovingObjectParams], layer : int = None, physics_type : str = None, force_active : bool = False) -> int:
+    def add_object(self, class_type : str, physics : bool, params : Optional[StaticObjectInfoParams, MovingObjectInfoParams], layer : int = None, physics_type : str = None, force_active : bool = False, need_hitbox : bool = True) -> int:
         used_ids = {obj['id'] for obj in self.objects}
         new_id = 0
         while new_id in used_ids:
@@ -141,7 +207,8 @@ class Level:
             params = params,
             layer = layer,
             physic_type = physics_type,
-            force_active = force_active
+            force_active = force_active,
+            need_hitbox= need_hitbox
         )
 
         self.objects.append(data)
@@ -151,16 +218,16 @@ class Level:
     def remove_object(self, id_ : int) -> None:
         self.objects = [obj for obj in self.objects if obj['id'] != id_]
 
-    def add_animation(self, object_id : int, name : str, delay : float, frames : list[str], change_size : bool = False, frames_size : list[tuple[int,int]] = None):
-        data = AnimationData(
-            object_id = object_id,
-            name = name,
-            change_size= change_size,
-            delay = delay,
-            frames = frames,
+    def add_animation(self, object_id : int, name : str, delay : float, frames_ids : list[int], change_hitboxes : bool = True):
+        self.animations.append(
+            AnimationData(
+                object_id = object_id,
+                name = name,
+                delay = delay,
+                frames= frames_ids,
+                change_hitboxes = change_hitboxes
+            )
         )
-
-        self.animations.append(data)
 
     def remove_animation(self, object_id : int, name : str):
         self.animations = [anim for anim in self.animations
@@ -245,6 +312,8 @@ class Level:
         data = {
             'size': self.size,
             'g': self.g,
+            'sprites': self.sprites,
+            'hitboxes': self.hitboxes,
             'objects': self.objects,
             'animations': self.animations,
             'sounds': self.sounds,
@@ -262,6 +331,8 @@ class Level:
 
         self.size = data['size']
         self.g = data['g']
+        self.sprites = data.get('sprites', [])
+        self.hitboxes = data.get('hitboxes', [])
         self.objects = data.get('objects', [])
         self.cam_boxes = data.get('cam_boxes', [])
         self.animations = data.get('animations', [])
@@ -293,8 +364,7 @@ class Game:
         self.scripts: dict[int : Script] = dict()
         self.binds : dict[int : Command] = dict()
 
-        self.sprites : dict[str : pygame.Surface, None : None] = dict()
-        self.sprites[None] = None
+        self.sprites : dict[int : tuple[pygame.Surface, HitboxParams]] = dict()
 
         self.sounds : dict[int : str] = dict()
 
@@ -309,6 +379,8 @@ class Game:
         self.animation_engine = AnimationEngine()
         self.sound_engine = SoundEngine()
         self.script_system = ScriptingSystem()
+
+        self._load_sprites(level)
 
         self._load_player_and_managers(level)
 
@@ -327,11 +399,21 @@ class Game:
 
         self._load_binds(level)
 
+    def _load_sprites(self, level : Level):
+        for data in level.sprites:
+            sprite = pygame.image.load(data['sprite_path'])
+            sprite = pygame.transform.scale(sprite,data['sprite_size'])
+
+            hb_params = level.hitboxes[data['hitbox_id']]['hitbox']
+
+            self.sprites[data['id']] = (sprite, hb_params)
+
     def _load_player_and_managers(self, level : Level):
         player_data = level.objects[0]
         if not player_data:
             raise ValueError("Player data is missing in level configuration")
-        self.player = self._object_from_data(class_type = 'Player', params = player_data["params"])
+        print(player_data)
+        self.player = self._object_from_data(class_type = 'Player', info_params = player_data["params"], need_hitbox= player_data['need_hitbox'])
 
         self.camera = Camera(target= self.player, screen_size = self.screen_size)
 
@@ -361,8 +443,8 @@ class Game:
 
     def _load_objects(self, level : Level):
         for data in level.objects[1:]:
-            obj = self._object_from_data(data['class_type'], data['params'])
-
+            obj = self._object_from_data(class_type = data['class_type'], info_params= data['params'], need_hitbox = data['need_hitbox'])
+            print(data)
             self.objects[data['id']] = obj
             if data['physics']:
                 if data['physic_type'] == "Stoppable":
@@ -387,14 +469,21 @@ class Game:
             self.camera_manager.add_cam_box(hitbox)
             self.cam_boxes[data['id']] = hitbox
 
-    def _load_animations(self,level : Level):
-        for data in level.animations:
-            frames = list()
+    def _load_animations(self, level: Level) -> None:
+        for anim_data in level.animations:
+            obj = self.objects[anim_data['object_id']]
 
-            for frame_path in data['frames']:
-                frames.append(self._get_sprite(frame_path))
+            frames = [self._get_sprite(id_) for id_ in anim_data['frames']]
 
-            self.animation_engine.add_anim(self.objects[data['object_id']],data['name'],data['delay'],frames)
+            if anim_data['change_hitboxes']:
+                hitboxes = [self.sprites[id_][1] for id_ in anim_data['frames']]
+                frames_list = [(frames[i],hitboxes[i]) for i in range(len(frames))]
+            else:
+                frames_list = [(item, None) for item in frames]
+
+
+            self.animation_engine.add_anim(obj= obj, animation_name= anim_data['name'], anim_delay = anim_data['delay'], frames_list = frames_list)
+            print(frames_list)
 
     def _load_sounds(self,level : Level):
         for data in level.sounds:
@@ -436,20 +525,73 @@ class Game:
             else:
                 self.input_manager.bind_key(key= data['key'], command = command, event_type = data['type'])
 
-    def _object_from_data(self, class_type : str, params : Optional[StaticObjectParams, MovingObjectParams, PlayerObjectParams]) -> Optional[StaticObject, MovingObject, Player]:
-        sprite = self._get_sprite(params.get('sprite_path'))
+    def _object_from_data(self, class_type : str, need_hitbox : bool, info_params : Optional[StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams]) -> Optional[StaticObject, MovingObject, Player]:
+        if info_params.get('sprite_id') == 0 or info_params.get('sprite_id'):
+            sprite = self._get_sprite(sprite_id= info_params['sprite_id'])
+        else:
+            sprite = None
+
+        if need_hitbox:
+            hitbox = self._get_hitbox(sprite_id = info_params['sprite_id'], obj_pos = info_params['pos'])
+        else:
+            hitbox = None
+
         if class_type == "Static":
-            return StaticObject.from_params(params, sprite)
+            return StaticObject.from_params(
+                StaticObjectParams(
+                    pos = info_params['pos'],
+                    sprite = sprite,
+                    hitbox = hitbox,
+                    size=sprite.get_size() if sprite else (0,0)
+                )
+            )
         elif class_type == "Moving":
-            return MovingObject.from_params(params, sprite)
+            return MovingObject.from_params(
+                MovingObjectParams(
+                    pos=info_params['pos'],
+                    sprite=sprite,
+                    hitbox=hitbox,
+                    size=sprite.get_size() if sprite else (0,0),
+
+                    max_speed_x=info_params['max_speed_x'],
+                    max_speed_y=info_params['max_speed_y'],
+                    velocity_x=info_params['velocity_x'],
+                    velocity_y=info_params['velocity_y'],
+                    ground_friction_x=info_params['ground_friction_x'],
+                    air_friction_x=info_params['air_friction_x'],
+                    air_friction_y=info_params['air_friction_y'],
+                    gravitate=info_params['gravitate']
+                )
+            )
         elif class_type == "Player":
-            return Player.from_params(params, sprite)
+            return Player.from_params(
+                PlayerObjectParams(
+                    pos=info_params['pos'],
+                    sprite=sprite,
+                    hitbox=hitbox,
+                    size=sprite.get_size() if sprite else (0,0),
 
-    def _get_sprite(self, sprite_path : str | None) -> pygame.Surface | None:
-        if sprite_path not in self.sprites.keys():
-            self.sprites[sprite_path] = pygame.image.load(sprite_path)
+                    max_speed_x=info_params['max_speed_x'],
+                    max_speed_y=info_params['max_speed_y'],
+                    velocity_x=info_params['velocity_x'],
+                    velocity_y=info_params['velocity_y'],
+                    ground_friction_x=info_params['ground_friction_x'],
+                    air_friction_x=info_params['air_friction_x'],
+                    air_friction_y=info_params['air_friction_y'],
+                    gravitate=info_params['gravitate'],
 
-        return self.sprites[sprite_path]
+                    lives=info_params['lives']
+                )
+            )
+
+    def _get_sprite(self, sprite_id : int) -> pygame.Surface:
+        return self.sprites[sprite_id][0]
+
+    def _get_hitbox(self, sprite_id : str, obj_pos : tuple[float,float]) -> Hitbox:
+        hb_params = self.sprites[sprite_id][1]
+        hb_pos = (obj_pos[0]+ hb_params['offset'][0], obj_pos[1]+hb_params['offset'][1])
+
+        return Hitbox(pos = hb_pos, size = hb_params['size'])
 
     def _script_from_data(self, script_info : ScriptInfoParams) -> Script:
         script_params = ScriptParams(
@@ -511,5 +653,3 @@ class Game:
             pygame.display.update()
 
             self.clock.tick_busy_loop(self.max_fps)
-
-# словари...
