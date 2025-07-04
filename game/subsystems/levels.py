@@ -60,7 +60,7 @@ class ObjectData(TypedDict):
     class_type : str
     physics : bool
     physic_type : NotRequired[str]
-    layer : int
+    layer : NotRequired[int]
     params : Optional[StaticObjectParams, MovingObjectParams, PlayerObjectParams]
     force_active: bool
 
@@ -68,6 +68,7 @@ class ObjectData(TypedDict):
 class AnimationData(TypedDict):
     object_id : int
     name : str
+    change_size : bool
     delay : float
     frames : list[str] #list[sprite_path]
 
@@ -110,7 +111,7 @@ class Level:
         self.scripts : list[ScriptData] = list()
         self.binds : list[BindData] = list()
 
-    def set_player(self, params : PlayerObjectParams, layer : int, physics : bool = True, physics_type : str = 'Stoppable', force_active : bool = True) -> int:
+    def set_player(self, params : PlayerObjectParams, layer : int = None, physics : bool = True, physics_type : str = 'Stoppable', force_active : bool = True) -> int:
         data = ObjectData(
             id = 0,
             class_type = 'player',
@@ -150,12 +151,13 @@ class Level:
     def remove_object(self, id_ : int) -> None:
         self.objects = [obj for obj in self.objects if obj['id'] != id_]
 
-    def add_animation(self, object_id : int, name : str, delay : float, frames : list[str]):
+    def add_animation(self, object_id : int, name : str, delay : float, frames : list[str], change_size : bool = False, frames_size : list[tuple[int,int]] = None):
         data = AnimationData(
             object_id = object_id,
             name = name,
+            change_size= change_size,
             delay = delay,
-            frames = frames
+            frames = frames,
         )
 
         self.animations.append(data)
@@ -348,9 +350,10 @@ class Game:
             else:
                 self.physic_engine.add_static_object(self.player)
 
-        if not player_data['layer'] in self.layers.keys():
-            self.layers[player_data['layer']] = Layer()
-        self.layers[player_data['layer']].objects.append(self.player)
+        if player_data['layer']:
+            if player_data['layer'] not in self.layers.keys():
+                self.layers[player_data['layer']] = Layer()
+            self.layers[player_data['layer']].objects.append(self.player)
 
         self.activity_manager.add_object(self.player)
         if player_data['force_active']:
@@ -369,9 +372,10 @@ class Game:
                 elif data['physic_type'] == 'Static':
                     self.physic_engine.add_static_object(obj)
 
-            if not data['layer'] in self.layers.keys():
-                self.layers[data['layer']] = Layer()
-            self.layers[data['layer']].objects.append(obj)
+            if data['layer'] or data['layer'] == 0:
+                if not data['layer'] in self.layers.keys():
+                    self.layers[data['layer']] = Layer()
+                self.layers[data['layer']].objects.append(obj)
 
             self.activity_manager.add_object(obj)
             if data['force_active']:
@@ -433,7 +437,7 @@ class Game:
                 self.input_manager.bind_key(key= data['key'], command = command, event_type = data['type'])
 
     def _object_from_data(self, class_type : str, params : Optional[StaticObjectParams, MovingObjectParams, PlayerObjectParams]) -> Optional[StaticObject, MovingObject, Player]:
-        sprite = self._get_sprite(params['sprite_path'])
+        sprite = self._get_sprite(params.get('sprite_path'))
         if class_type == "Static":
             return StaticObject.from_params(params, sprite)
         elif class_type == "Moving":

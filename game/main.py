@@ -27,7 +27,7 @@ def create_test_level()-> Level:
             gravitate = True,
             velocity_x = 0,
             velocity_y = 0,
-            lives = 5
+            lives = 5,
         ),
         physics = True,
         physics_type = 'Stoppable',
@@ -170,7 +170,14 @@ def create_test_level()-> Level:
     zombie_path = "assets/sound/zombie.mp3"
 
     anim_name = 'rotate'
-    level.add_animation(object_id= player_id, name = anim_name, delay = 2, frames=['assets/character/char0.png','assets/character/char1.png'])
+    level.add_animation(
+        object_id= player_id,
+        name = anim_name,
+        delay = 2,
+        frames=['assets/character/char0.png','assets/character/char1.png'],
+        change_size= True,
+        frames_size=[(100,100),(50,50)],
+    )
 
     level.add_sound('sound', jump_sound_path,0.1)
     level.add_sound('sound', zombie_path, 0.3)
@@ -227,3 +234,5 @@ def test2()-> None:
 
 if __name__ == "__main__":
     test2()
+
+#sprite = pygame.transform.scale(sprite,(10,10))

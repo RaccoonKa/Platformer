@@ -263,7 +263,7 @@ class MoveRightScript(CommandScript):
 
     def start(self):
         self.running = True
-        print("Побежал вправо")
+        #print("Побежал вправо")
         # анимация бега вправо
 
     def on_execute(self, dt : float, press : bool = False, hold : bool = False, release : bool = False) -> None:
@@ -287,7 +287,7 @@ class MoveRightScript(CommandScript):
 
     def stop(self):
         self.running = False
-        print("Постоял")
+        #print("Постоял")
         # отмена анимации(мб остановка)
 
     def destroy(self) -> None:
@@ -322,7 +322,7 @@ class MoveLeftScript(CommandScript):
 
     def start(self):
         self.running = True
-        print("Побежал влево")
+        #print("Побежал влево")
         # анимация бега вправо
 
     def on_execute(self, dt : float, press : bool = False, hold : bool = False, release : bool = False) -> None:
@@ -346,7 +346,7 @@ class MoveLeftScript(CommandScript):
 
     def stop(self):
         self.running = False
-        print("Постоял")
+        #print("Постоял")
         # отмена анимации(мб остановка)
 
     def destroy(self) -> None:
