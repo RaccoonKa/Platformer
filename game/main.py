@@ -230,12 +230,15 @@ def test2()-> None:
     icon = pygame.image.load("assets/icon.png")
     pygame.display.set_icon(icon)
 
+    #
     clock = pygame.time.Clock()
 
+    level_path = "saves/level_test/level_test.json"
+
     level = create_test_level()
-    level.save_to_file("saves/level1.json")
+    level.save_to_file(level_path)
     level = Level()
-    level.load_from_file("saves/level1.json")
+    level.load_from_file(level_path)
 
     game = Game(screen,screen_size,clock,max_fps)
 
