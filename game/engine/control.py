@@ -99,3 +99,6 @@ class InputHandler:
 
     def get_mouse_position(self) -> Tuple[float, float]:
         return self.mouse_position[0] + self.camera.x, self.mouse_position[1] + self.camera.y
+
+    def get_mouse_position_on_screen(self) -> Tuple[float,float]:
+        return  self.mouse_position

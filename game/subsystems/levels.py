@@ -153,7 +153,7 @@ class Level:
         self.hitboxes = [hb for hb in self.hitboxes if hb['id'] != id_]
 
     def add_sprite(self, path : str, size : tuple[int, int] = None, hb_size : tuple[int, int] = None, hb_offset : tuple[float,float] = (0,0)) -> int:
-        used_ids = {obj['id'] for obj in self.sprites}
+        used_ids = {sprite['id'] for sprite in self.sprites}
         new_id = 0
         while new_id in used_ids:
             new_id += 1
@@ -412,7 +412,6 @@ class Game:
         player_data = level.objects[0]
         if not player_data:
             raise ValueError("Player data is missing in level configuration")
-        print(player_data)
         self.player = self._object_from_data(class_type = 'Player', info_params = player_data["params"], need_hitbox= player_data['need_hitbox'])
 
         self.camera = Camera(target= self.player, screen_size = self.screen_size)
@@ -444,7 +443,6 @@ class Game:
     def _load_objects(self, level : Level):
         for data in level.objects[1:]:
             obj = self._object_from_data(class_type = data['class_type'], info_params= data['params'], need_hitbox = data['need_hitbox'])
-            print(data)
             self.objects[data['id']] = obj
             if data['physics']:
                 if data['physic_type'] == "Stoppable":
@@ -483,7 +481,6 @@ class Game:
 
 
             self.animation_engine.add_anim(obj= obj, animation_name= anim_data['name'], anim_delay = anim_data['delay'], frames_list = frames_list)
-            print(frames_list)
 
     def _load_sounds(self,level : Level):
         for data in level.sounds:

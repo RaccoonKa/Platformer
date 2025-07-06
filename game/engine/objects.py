@@ -107,6 +107,7 @@ class StaticObject(GameObject):
         self.sprite = sprite
 
         if generate_hitbox:
+            self.size = self.sprite.get_size()
             self.hitbox = Hitbox.from_obj(self)
         elif hitbox:
             self.hitbox = hitbox

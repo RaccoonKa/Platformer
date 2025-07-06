@@ -59,12 +59,12 @@ class Script(ABC):
         self.kill = True
 
     @abstractmethod
-    def stop(self) -> None:
-        self.enabled = False
-
-    @abstractmethod
     def start(self) -> None:
         self.enabled = True
+
+    @abstractmethod
+    def stop(self) -> None:
+        self.enabled = False
 
     @abstractmethod
     def update(self, dt: float) -> None:
