@@ -401,7 +401,7 @@ class Game:
 
     def _load_sprites(self, level : Level):
         for data in level.sprites:
-            sprite = pygame.image.load(data['sprite_path'])
+            sprite = pygame.image.load(data['sprite_path']).convert_alpha()
             sprite = pygame.transform.scale(sprite,data['sprite_size'])
 
             hb_params = level.hitboxes[data['hitbox_id']]['hitbox']

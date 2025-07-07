@@ -23,6 +23,8 @@ def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
             return PlaySoundScript(params)
         case 'ChangeAnim':
             return ChangeAnim(params)
+        case 'MovementSystem':
+            return MovementSystemScript(params)
         case _:
             return Script(params)
 
@@ -590,6 +592,81 @@ class ChangeAnim(Script):
 
     def destroy(self) -> None:
         self.kill = True
+
+
+class MovementSystemInfoParams(ScriptInfoParams):
+    def __init__(self, target_id : int, m_l_scr_id : int, m_r_scr_id : int, j_scr_id : int, enabled : bool = True):
+        super().__init__()
+        self.enabled = enabled
+        self.type = 'MovementSystem'
+
+        self.systems['animation_engine'] = True
+
+        self.scripts = [m_l_scr_id, m_r_scr_id, j_scr_id]
+        self.objects = [target_id]
+
+
+class MovementSystemScript(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+        self.animation_engine = params['systems']['animation_engine']
+
+        self.m_l_script = params['scripts'][0]
+        self.m_r_script = params['scripts'][1]
+        self.j_script = params['scripts'][2]
+
+        self.target = params['objects'][0]
+
+        self.moving_left = False
+        self.moving_right = False
+
+        self.last_direction = "right"
+        self.current_anim = None
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        self.moving_left = self.m_l_script.running
+        self.moving_right = self.m_r_script.running
+
+        if self.moving_left:
+            self.last_direction = "left"
+        elif self.moving_right:
+            self.last_direction = "right"
+
+        new_anim = None
+
+        if not self.target.is_grounded:
+            if self.target.velocity_y < 0:  # Движение вверх
+                new_anim = f"jump_{self.last_direction}"
+            else:
+                new_anim = f"fall_{self.last_direction}"
+        else:
+            if self.moving_left and not self.moving_right:
+                new_anim = "walk_left"
+            elif self.moving_right and not self.moving_left:
+                new_anim = "walk_right"
+            else:
+                new_anim = f"stay_{self.last_direction}"
+
+        if new_anim != self.current_anim:
+            self.animation_engine.switch_anim(
+                obj=self.target,
+                animation_name=new_anim,
+                play_now=True,
+                cycle=True
+            )
+            self.current_anim = new_anim
+
+
+
 # params:
 #
 # layer_system
