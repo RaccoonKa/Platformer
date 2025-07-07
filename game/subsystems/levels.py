@@ -109,7 +109,8 @@ class SpriteData(TypedDict):
 
 
 class Level:
-    def __init__(self, size : tuple[int,int] = (0,0), g : float = 9.8*16):
+    def __init__(self, size : tuple[int,int] = (0,0), g : float = 9.8*16, screen_size : tuple[int,int] = (1920,1080)):
+        self.screen_size = screen_size
         self.size : tuple[int,int] = size
         self.g : float = g
 
@@ -311,6 +312,7 @@ class Level:
     def save_to_file(self, filename: str) -> None:
         data = {
             'size': self.size,
+            'screen_size' : self.screen_size,
             'g': self.g,
             'sprites': self.sprites,
             'hitboxes': self.hitboxes,
@@ -330,6 +332,7 @@ class Level:
             data = json.load(f, object_hook=game_hook)
 
         self.size = data['size']
+        self.screen_size = data['screen_size']
         self.g = data['g']
         self.sprites = data.get('sprites', [])
         self.hitboxes = data.get('hitboxes', [])
@@ -341,10 +344,10 @@ class Level:
         self.binds = data.get('binds', [])
 
 class Game:
-    def __init__(self, screen : pygame.Surface, screen_size : tuple[int,int], clock : pygame.time.Clock, max_fps : float = 0):
+    def __init__(self, screen : pygame.Surface, screen_size : tuple[int,int], clock : pygame.time.Clock, max_fps : int = 0):
         self.screen : pygame.Surface = screen
         self.screen_size : tuple[int,int] = screen_size
-        self.max_fps : float = max_fps
+        self.max_fps : int = max_fps
         self.clock = clock
 
         self.camera : Camera | None = None
@@ -374,6 +377,10 @@ class Game:
         self.full_exit = False
 
     def load_level(self, level : Level):
+        if level.screen_size != self.screen_size:
+            self.screen_size = level.screen_size
+            self.screen = pygame.display.set_mode(size=self.screen_size, vsync=self.max_fps, flags = pygame.FULLSCREEN | pygame.SCALED)
+
         self.layer_system = LayerSystem(size = level.size, screen = self.screen)
         self.physic_engine = PhysicEngine(g = level.g)
         self.animation_engine = AnimationEngine()

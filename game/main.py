@@ -3,7 +3,9 @@ import random
 
 from game.subsystems.scripts import LogInfoParams, MarioChaseInfoParams, PatrolInfoParams, \
     MoveLeftInfoParams, MoveRightInfoParams, JumpInfoParams, ScriptSwitcherInfoParams, FlagSwitchInfoParams, \
-    PlaySoundInfoParams, ChangeAnimInfoParams, MovementSystemInfoParams
+    PlaySoundInfoParams, ChangeAnimInfoParams, MovementSystemInfoParams, MousePositionInfoParams, \
+    PlatformAppearSystemInfoParams
+
 from game.subsystems.levels import Game, Level
 
 from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams, HitboxParams
@@ -113,7 +115,7 @@ def create_test_level()-> Level:
             )
         )
 
-    #platforms
+    #platform
     for i in range(100, 5000, 70):
         for j in range(0, 1080 - 35 * 3, 35):
             if random.randint(0, 100) % 100 == 0:
@@ -221,8 +223,19 @@ def create_test_level()-> Level:
 
 def create_level_1()-> Level:
     level = Level()
+    level.screen_size = (1152,648)
     level.size = (2000,1200)
     level.g = 10*16*2
+
+    sfx_volume = 1
+
+    #cameraboxes
+    level.add_cam_box(
+        hitbox= HitboxParams(
+            pos = (0,0),
+            size = (level.size[0] - level.screen_size[0], level.size[1] - level.screen_size[1])
+        )
+    )
 
     #player #todo
     char_size = (47,94)
@@ -240,7 +253,7 @@ def create_level_1()-> Level:
 
             max_speed_x= 1000,
             max_speed_y= 1000,
-            ground_friction_x = 3,
+            ground_friction_x = 6,
             air_friction_x = 0.05,
             air_friction_y=0,
             gravitate= True,
@@ -249,7 +262,7 @@ def create_level_1()-> Level:
 
             lives= 5
         ),
-        layer = 1,
+        layer = 2,
         force_active = True,
         need_hitbox = False
     )
@@ -356,7 +369,7 @@ def create_level_1()-> Level:
             pos = (0,0),
             sprite_id= rain_sprite_id,
         ),
-        layer= 2,
+        layer= 3,
         force_active=True,
         need_hitbox=False
     )
@@ -385,7 +398,10 @@ def create_level_1()-> Level:
 
     #platforms #todo
     platform0_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/platform0.png"
+        path="assets/pictures/game/things/platform0.png",
+        size = (254,60),
+        hb_size = (254,50),
+        hb_offset=(0,10)
     )
     platform1_spr_id = level.add_sprite(
         path="assets/pictures/game/things/platform1.png"
@@ -397,25 +413,27 @@ def create_level_1()-> Level:
         path="assets/pictures/game/things/platform3.png"
     )
 
-    level.add_object(
+    platform_ids = [level.add_object(
         class_type= "Static",
         physics= True,
         physics_type= "Static",
         params= StaticObjectInfoParams(
-            pos = (1600,1100),
+            pos = (1800-i*350,1100-i*100),
             sprite_id = platform0_spr_id
         ),
         layer= 1,
         force_active= False,
         need_hitbox= True
-    )
+    ) for i in range(0,6)]
 
+    spawn_sound_name = "assets/audio/game/sounds/other/glitch.MP3"
+    level.add_sound(filename=spawn_sound_name, volume=0.1*sfx_volume, type_="sound")
 
-    #cameraboxes
-    level.add_cam_box(
-        hitbox= HitboxParams(
-            pos = (0,0),
-            size = (80,120)
+    level.add_script(
+        PlatformAppearSystemInfoParams(
+            platforms_ids=platform_ids,
+            target_id=player_id,
+            appear_sounds=[(spawn_sound_name,-1)]*len(platform_ids)
         )
     )
 
@@ -454,7 +472,7 @@ def create_level_1()-> Level:
     level.add_animation(
         object_id=player_id,
         name="jump_left",
-        delay=1 / num,
+        delay= 2 / num,
         frames_ids=sprites,
         change_hitboxes=False
     )
@@ -467,7 +485,7 @@ def create_level_1()-> Level:
     level.add_animation(
         object_id=player_id,
         name="jump_right",
-        delay=1 / num,
+        delay= 2 / num,
         frames_ids=sprites,
         change_hitboxes=False
     )
@@ -525,12 +543,18 @@ def create_level_1()-> Level:
 
     #sounds #todo
     jump_sound_path = 'assets/audio/game/sounds/ANDY/jump/up.mp3'
-    level.add_sound('sound',jump_sound_path, 0.1)
+    level.add_sound('sound',jump_sound_path, 0.1*sfx_volume)
+    land_sound_path = 'assets/audio/game/sounds/ANDY/jump/down.mp3'
+    level.add_sound('sound', land_sound_path, 0.1*sfx_volume)
+    fall_sound_path = 'assets/audio/game/sounds/ANDY/fall/fall.mp3'
+    level.add_sound('sound', fall_sound_path, 0.1*sfx_volume)
+    walk_sound_path = 'assets/audio/game/sounds/ANDY/steps/steps.mp3'
+    level.add_sound('sound', walk_sound_path, 0.1*sfx_volume)
 
     #binds #todo
     m_l_id = level.add_script(MoveLeftInfoParams(player_id, 500, 50, 10 * 16))
     m_r_id = level.add_script(MoveRightInfoParams(player_id, 500, 50, 10 * 16))
-    j_id = level.add_script(JumpInfoParams(player_id, 20 * 16, jump_sound_path))
+    j_id = level.add_script(JumpInfoParams(player_id, 20 * 16, jump_sound_path, land_sound_path))
 
     level.add_script(
         MovementSystemInfoParams(
@@ -538,7 +562,10 @@ def create_level_1()-> Level:
             m_l_scr_id = m_l_id,
             m_r_scr_id = m_r_id,
             j_scr_id = j_id,
-            enabled = True
+            enabled = True,
+            fall_sound= fall_sound_path,
+            land_sound= land_sound_path,
+            walk_sound= walk_sound_path
         )
     )
 
@@ -549,17 +576,23 @@ def create_level_1()-> Level:
     level.add_binds('release', pygame.K_d, m_r_id)
     level.add_binds('hold', pygame.K_w, j_id)
     level.add_binds('hold', pygame.K_SPACE, j_id)
-    level.add_binds('mouse_hold', pygame.BUTTON_LEFT, j_id)
+
+    #todo установить размер экрана для уровня, и шобы оно меняло там ну да
+
+    #tmp
+    mouse_script_id = level.add_script(MousePositionInfoParams())
+    level.add_binds('mouse_press', pygame.BUTTON_LEFT, mouse_script_id)
 
     return level
 
 
 def test2()-> None:
     screen_size = (1920,1080)
-    max_fps = 0
+    max_fps = 0 #60
 
     pygame.init()
-    screen = pygame.display.set_mode(size = screen_size,vsync = max_fps)
+    screen = pygame.display.set_mode(size=screen_size, vsync=max_fps, flags = pygame.FULLSCREEN | pygame.SCALED)
+
     pygame.display.set_caption("Окно так называется")  # Название окна
 
     icon = pygame.image.load("assets/icon.png")

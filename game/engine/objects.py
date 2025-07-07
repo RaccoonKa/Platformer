@@ -73,6 +73,7 @@ class Hitbox:
         new_height = self.size[1] * scale_y
         self.size = (int(new_width), int(new_height))
 
+
 class GameObject:
     def __init__(self)-> None:
         self.is_active = True
@@ -103,11 +104,14 @@ class StaticObject(GameObject):
         self.x = pos[0]
         self.y = pos[1]
 
+        self.visible = True
+
         self.size = size
         self.sprite = sprite
 
         if generate_hitbox:
-            self.size = self.sprite.get_size()
+            if self.sprite:
+                self.size = self.sprite.get_size()
             self.hitbox = Hitbox.from_obj(self)
         elif hitbox:
             self.hitbox = hitbox
@@ -159,7 +163,8 @@ class StaticObject(GameObject):
         self._hitbox = hitbox
 
     def get_hitbox_offset(self) -> tuple[float,float]:
-        return self.x - self.hitbox.x, self.y - self.hitbox.y
+        #return self.x - self.hitbox.x, self.y - self.hitbox.y
+        return  self.hitbox.x - self.x, self.hitbox.y - self.y
 
     def set_hitbox_by_params(self, hb_params : HitboxParams):
         if hb_params:
@@ -191,7 +196,8 @@ class StaticObject(GameObject):
         self.size = self.sprite.get_size()
 
     def draw_on(self, screen : pygame.Surface) -> None:
-        screen.blit(self.sprite,(self.x,self.y))
+        if self.visible:
+            screen.blit(self.sprite,(self.x,self.y))
 
     def get_centre(self) -> tuple[float,float]:
         return self.size[0]/2+self.x, self.size[1]/2+self.y
@@ -199,6 +205,15 @@ class StaticObject(GameObject):
     def generate_hitbox(self):
         self.hitbox = Hitbox.from_obj(self)
 
+    def move_to(self, pos : tuple[float,float]):
+        if self.hitbox:
+            offset = self.get_hitbox_offset()
+
+            self.hitbox.x = pos[0] + offset[0]
+            self.hitbox.y = pos[1] + offset[1]
+
+        self.x = pos[0]
+        self.y = pos[1]
 
 class MovingObjectInfoParams(StaticObjectInfoParams):
     max_speed_x : float

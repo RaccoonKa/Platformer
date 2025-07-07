@@ -1,5 +1,8 @@
 from __future__ import annotations
+
 from game.engine.script_system import ScriptParams, ScriptInfoParams, Script, CommandScript
+from game.engine.objects import StaticObject, Hitbox
+
 
 def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
     match type_:
@@ -25,6 +28,12 @@ def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
             return ChangeAnim(params)
         case 'MovementSystem':
             return MovementSystemScript(params)
+        case "MousePosition":
+            return MousePosition(params)
+        case "AppearedObject":
+            return AppearedObject(params)
+        case 'PlatformAppearSystem':
+            return PlatformAppearSystem(params)
         case _:
             return Script(params)
 
@@ -356,7 +365,7 @@ class MoveLeftScript(CommandScript):
 
 
 class JumpInfoParams(ScriptInfoParams):
-    def __init__(self, obj_id : int, jump_speed : float, jump_sound : str):
+    def __init__(self, obj_id : int, jump_speed : float, jump_sound : str, land_sound : str):
         super().__init__()
         self.enabled = False
         self.type = 'JumpCommand'
@@ -367,7 +376,8 @@ class JumpInfoParams(ScriptInfoParams):
 
         self.other = {
             'jump_speed' : jump_speed,
-            'jump_sound' : jump_sound
+            'jump_sound' : jump_sound,
+            'land_sound' : land_sound
         }
         #self.other['jump_anim'] = jump_anim
 
@@ -382,6 +392,7 @@ class JumpScript(CommandScript):
         other = params['other']
         self.jump_sound = other['jump_sound']
         self.jump_speed = other['jump_speed']
+        self.land_sound = other['land_sound']
 
     def start(self) -> None:
         if self.obj.is_grounded:
@@ -506,16 +517,6 @@ class FlagSwitchScript(Script):
             self.target_in_zone = False
 
 
-class ClickSwitchScript(Script):
-    ...
-
-class TimeSwitchScript(Script):
-    ...
-
-class TimeFlagSwitchScript(Script):
-    ...
-
-
 class PlaySoundInfoParams(ScriptInfoParams):
     def __init__(self, sound : str, loops : int = 0 , volume : float = None):
         super().__init__()
@@ -595,21 +596,29 @@ class ChangeAnim(Script):
 
 
 class MovementSystemInfoParams(ScriptInfoParams):
-    def __init__(self, target_id : int, m_l_scr_id : int, m_r_scr_id : int, j_scr_id : int, enabled : bool = True):
+    def __init__(self, target_id : int, m_l_scr_id : int, m_r_scr_id : int, j_scr_id : int, fall_sound : str = None,
+                 land_sound : str = None, walk_sound : str = None, enabled : bool = True):
         super().__init__()
         self.enabled = enabled
         self.type = 'MovementSystem'
 
         self.systems['animation_engine'] = True
+        self.systems['sound_engine'] = True
 
         self.scripts = [m_l_scr_id, m_r_scr_id, j_scr_id]
         self.objects = [target_id]
 
+        self.other = {
+            'land_sound': land_sound,
+            'fall_sound': fall_sound,
+            'walk_sound': walk_sound
+        }
 
 class MovementSystemScript(Script):
     def __init__(self, params: ScriptParams) -> None:
         super().__init__(params)
         self.animation_engine = params['systems']['animation_engine']
+        self.sound_engine = params['systems']['sound_engine']
 
         self.m_l_script = params['scripts'][0]
         self.m_r_script = params['scripts'][1]
@@ -617,11 +626,19 @@ class MovementSystemScript(Script):
 
         self.target = params['objects'][0]
 
+        other = params['other']
+        self.land_sound = other.get('land_sound')
+        self.fall_sound = other.get('fall_sound')
+        self.walk_sound = other.get('walk_sound')
+
         self.moving_left = False
         self.moving_right = False
 
         self.last_direction = "right"
         self.current_anim = None
+
+        self.was_falling = False
+        self.is_walk_sound_playing = False
 
     def destroy(self) -> None:
         self.kill = True
@@ -633,8 +650,34 @@ class MovementSystemScript(Script):
         self.enabled = False
 
     def update(self, dt: float) -> None:
+        print(self.target.is_grounded)
+        is_falling = not self.target.is_grounded and self.target.velocity_y > 0
+
+        if not self.was_falling and is_falling and self.fall_sound:
+            self.sound_engine.play_sound(self.fall_sound)
+
+        if self.was_falling and self.target.is_grounded and self.land_sound:
+            self.sound_engine.play_sound(self.land_sound)
+            self.sound_engine.stop_sound(self.fall_sound)
+
+        self.was_falling = is_falling
+
         self.moving_left = self.m_l_script.running
         self.moving_right = self.m_r_script.running
+
+        is_walking = (self.moving_left or self.moving_right) and self.target.is_grounded
+
+        if is_walking:
+            if not self.is_walk_sound_playing and self.walk_sound:
+                self.sound_engine.play_sound(
+                    name=self.walk_sound,
+                    loops=-1
+                )
+                self.is_walk_sound_playing = True
+        else:
+            if self.is_walk_sound_playing and self.walk_sound:
+                self.sound_engine.stop_sound(self.walk_sound)
+                self.is_walk_sound_playing = False
 
         if self.moving_left:
             self.last_direction = "left"
@@ -666,8 +709,185 @@ class MovementSystemScript(Script):
             self.current_anim = new_anim
 
 
+class MousePositionInfoParams(ScriptInfoParams):
+    def __init__(self, enabled : bool = True):
+        super().__init__()
+        self.type = "MousePosition"
+        self.enabled =  enabled
+        self.systems['input_manager'] = True
 
-# params:
+class MousePosition(CommandScript):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.input_handler = params['systems']['input_manager']
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        pass
+
+    def on_execute(self, dt: float, press: bool = False, hold: bool = False, release: bool = False) -> None:
+        if press:
+            print(f"Мышь: (x,y) = {self.input_handler.get_mouse_position()}")
+
+
+class AppearedObjectInfoParams(ScriptInfoParams):
+    def __init__(self, target_id : int, appear_sound : str = None, volume : float = 0.1, appear_anim : str = None):
+        super().__init__()
+        self.type = "AppearedObject"
+        self.enabled = False
+        self.objects = [target_id]
+
+        self.other['appear_sound'] = (appear_sound, volume)
+        self.other['appear_anim'] = appear_anim
+
+class AppearedObject(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.target = params['objects'][0]
+
+        self.sound_engine = params['systems']['sound_engine']
+        self.animation_engine = params['systems']['animation_engine']
+
+        self.appear_sound = params['other']['appear_sound']
+        self.appear_anim = params['other']['appear_anim']
+
+        self.original_position = (self.target.x, self.target.y)
+
+        self.target.move_to((-1000,-1000))
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        if self.enabled:
+            pass
+        else:
+            self.target.move_to(self.original_position)
+
+            if self.appear_sound[0]:
+                self.sound_engine.play_sound(name = self.appear_sound[0], volume= self.appear_sound[1])
+            if self.appear_anim:
+                self.animation_engine.switch_anim(animation_name= self.appear_anim, cycle= False)
+
+            self.enabled = True
+
+    def stop(self) -> None:
+        pass
+
+    def update(self, dt: float) -> None:
+        pass
+
+
+class PlatformAppearSystemInfoParams(ScriptInfoParams):
+    def __init__(self, target_id : int, platforms_ids : list[int], flag_size : tuple[int,int] = (-1,-1),
+                 appear_sounds: list[tuple[str, float] | None] = None,
+                 appear_anims: list[str | None] = None, enabled : bool = True):
+        super().__init__()
+        self.enabled = enabled
+        self.type = "PlatformAppearSystem"
+
+        self.objects = [target_id] + platforms_ids
+
+        self.other['flag_size'] = flag_size
+        self.other['appear_sounds'] = appear_sounds or [None] * len(platforms_ids)
+        self.other['appear_anims'] = appear_anims or [None] * len(platforms_ids)
+
+        self.systems['animation_engine'] = True
+        self.systems['sound_engine'] = True
+
+class PlatformAppearSystem(Script):
+    def __init__(self, params: ScriptParams):
+        super().__init__(params)
+
+        self.animation_engine = params['systems']['animation_engine']
+        self.sound_engine = params['systems']['sound_engine']
+
+        self.target = params['objects'][0]
+        self.platforms = params['objects'][1:]
+        self.orig_pos = [(i.x,i.y) for i in self.platforms]
+
+        other = params['other']
+        self.flag_size = other['flag_size']
+        self.appear_sounds = other['appear_sounds']
+        self.appear_anims = other['appear_anims']
+
+        self.sound_engine = params['systems']['sound_engine']
+        self.animation_engine = params['systems']['animation_engine']
+
+        self.flag_size = (
+            self.platforms[0].size[0] if self.flag_size[0] == -1 else self.flag_size[0],
+            10
+        )
+        self.flags = self.create_flags()
+        self.current_flag = None
+        self.current_platform = 0
+
+        for i in self.platforms:
+            i.move_to((-10000,-10000))
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.enabled = True
+        self.platforms[0].move_to(self.orig_pos[0])
+        self.play_sound_and_anim()
+        self.current_flag = self.flags[0]
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        if self.current_flag:
+            if self.current_platform == len(self.platforms) - 1:
+                self.current_flag = None
+            if self.target.hitbox.is_collide(self.current_flag):
+                self.play_sound_and_anim()
+                self.current_platform += 1
+                self.platforms[self.current_platform].move_to(self.orig_pos[self.current_platform])
+                self.current_flag = self.flags[self.current_platform]
+        else:
+            self.destroy()
+
+    def play_sound_and_anim(self):
+        sound_info = self.appear_sounds[self.current_platform]
+        if sound_info:
+            sound, volume = sound_info
+            if volume == -1:
+                self.sound_engine.play_sound(sound)
+            else:
+                self.sound_engine.play_sound(sound, volume=volume)
+
+        anim_name = self.appear_anims[self.current_platform]
+        if anim_name:
+            self.animation_engine.switch_anim(
+                obj = self.platforms[self.current_platform],
+                animation_name=anim_name,
+                play_now=True,
+                cycle=False
+            )
+
+    def create_flags(self) -> list[Hitbox]:
+        flags = []
+        for platform in self.platforms:
+            flags.append(
+                Hitbox(
+                    pos = ((platform.size[0] - self.flag_size[0])/2 + platform.hitbox.x, platform.hitbox.y - self.flag_size[1]),
+                    size = self.flag_size
+                )
+            )
+        return flags
+
 #
 # layer_system
 # camera_manager

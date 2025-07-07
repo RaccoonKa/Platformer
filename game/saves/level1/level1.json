@@ -3,6 +3,10 @@
         2000,
         1200
     ],
+    "screen_size": [
+        1152,
+        648
+    ],
     "g": 320,
     "sprites": [
         {
@@ -1325,11 +1329,11 @@
                 "pos": null,
                 "size": [
                     254,
-                    60
+                    50
                 ],
                 "offset": [
                     0,
-                    0
+                    10
                 ]
             }
         },
@@ -1389,7 +1393,7 @@
                 "sprite_id": 0,
                 "max_speed_x": 1000,
                 "max_speed_y": 1000,
-                "ground_friction_x": 3,
+                "ground_friction_x": 6,
                 "air_friction_x": 0.05,
                 "air_friction_y": 0,
                 "gravitate": true,
@@ -1397,7 +1401,7 @@
                 "velocity_y": 0,
                 "lives": 5
             },
-            "layer": 1,
+            "layer": 2,
             "physic_type": "Stoppable",
             "force_active": true,
             "need_hitbox": false
@@ -1493,7 +1497,7 @@
                 ],
                 "sprite_id": 4
             },
-            "layer": 2,
+            "layer": 3,
             "physic_type": null,
             "force_active": true,
             "need_hitbox": false
@@ -1504,8 +1508,88 @@
             "physics": true,
             "params": {
                 "pos": [
-                    1600,
+                    1800,
                     1100
+                ],
+                "sprite_id": 14
+            },
+            "layer": 1,
+            "physic_type": "Static",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 8,
+            "class_type": "Static",
+            "physics": true,
+            "params": {
+                "pos": [
+                    1450,
+                    1000
+                ],
+                "sprite_id": 14
+            },
+            "layer": 1,
+            "physic_type": "Static",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 9,
+            "class_type": "Static",
+            "physics": true,
+            "params": {
+                "pos": [
+                    1100,
+                    900
+                ],
+                "sprite_id": 14
+            },
+            "layer": 1,
+            "physic_type": "Static",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 10,
+            "class_type": "Static",
+            "physics": true,
+            "params": {
+                "pos": [
+                    750,
+                    800
+                ],
+                "sprite_id": 14
+            },
+            "layer": 1,
+            "physic_type": "Static",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 11,
+            "class_type": "Static",
+            "physics": true,
+            "params": {
+                "pos": [
+                    400,
+                    700
+                ],
+                "sprite_id": 14
+            },
+            "layer": 1,
+            "physic_type": "Static",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 12,
+            "class_type": "Static",
+            "physics": true,
+            "params": {
+                "pos": [
+                    50,
+                    600
                 ],
                 "sprite_id": 14
             },
@@ -1568,7 +1652,7 @@
         {
             "object_id": 0,
             "name": "jump_left",
-            "delay": 0.09090909090909091,
+            "delay": 0.18181818181818182,
             "frames": [
                 34,
                 35,
@@ -1587,7 +1671,7 @@
         {
             "object_id": 0,
             "name": "jump_right",
-            "delay": 0.09090909090909091,
+            "delay": 0.18181818181818182,
             "frames": [
                 45,
                 46,
@@ -1722,7 +1806,31 @@
         {
             "id": 0,
             "type": "sound",
+            "filename": "assets/audio/game/sounds/other/glitch.MP3",
+            "volume": 0.1
+        },
+        {
+            "id": 1,
+            "type": "sound",
             "filename": "assets/audio/game/sounds/ANDY/jump/up.mp3",
+            "volume": 0.1
+        },
+        {
+            "id": 2,
+            "type": "sound",
+            "filename": "assets/audio/game/sounds/ANDY/jump/down.mp3",
+            "volume": 0.1
+        },
+        {
+            "id": 3,
+            "type": "sound",
+            "filename": "assets/audio/game/sounds/ANDY/fall/fall.mp3",
+            "volume": 0.1
+        },
+        {
+            "id": 4,
+            "type": "sound",
+            "filename": "assets/audio/game/sounds/ANDY/steps/steps.mp3",
             "volume": 0.1
         }
     ],
@@ -1761,6 +1869,79 @@
         {
             "id": 1,
             "info_params": {
+                "__class__": "PlatformAppearSystemInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "PlatformAppearSystem",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": true,
+                        "sound_engine": true,
+                        "input_manager": false,
+                        "script_system": false
+                    },
+                    "objects": [
+                        0,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "flag_size": [
+                            -1,
+                            -1
+                        ],
+                        "appear_sounds": [
+                            [
+                                "assets/audio/game/sounds/other/glitch.MP3",
+                                -1
+                            ],
+                            [
+                                "assets/audio/game/sounds/other/glitch.MP3",
+                                -1
+                            ],
+                            [
+                                "assets/audio/game/sounds/other/glitch.MP3",
+                                -1
+                            ],
+                            [
+                                "assets/audio/game/sounds/other/glitch.MP3",
+                                -1
+                            ],
+                            [
+                                "assets/audio/game/sounds/other/glitch.MP3",
+                                -1
+                            ],
+                            [
+                                "assets/audio/game/sounds/other/glitch.MP3",
+                                -1
+                            ]
+                        ],
+                        "appear_anims": [
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 2,
+            "info_params": {
                 "__class__": "LogInfoParams",
                 "module": "game.subsystems.scripts",
                 "data": {
@@ -1787,7 +1968,7 @@
             }
         },
         {
-            "id": 2,
+            "id": 3,
             "info_params": {
                 "__class__": "MoveLeftInfoParams",
                 "module": "game.subsystems.scripts",
@@ -1819,7 +2000,7 @@
             }
         },
         {
-            "id": 3,
+            "id": 4,
             "info_params": {
                 "__class__": "MoveRightInfoParams",
                 "module": "game.subsystems.scripts",
@@ -1851,7 +2032,7 @@
             }
         },
         {
-            "id": 4,
+            "id": 5,
             "info_params": {
                 "__class__": "JumpInfoParams",
                 "module": "game.subsystems.scripts",
@@ -1876,13 +2057,14 @@
                     "clock": false,
                     "other": {
                         "jump_speed": 320,
-                        "jump_sound": "assets/audio/game/sounds/ANDY/jump/up.mp3"
+                        "jump_sound": "assets/audio/game/sounds/ANDY/jump/up.mp3",
+                        "land_sound": "assets/audio/game/sounds/ANDY/jump/down.mp3"
                     }
                 }
             }
         },
         {
-            "id": 5,
+            "id": 6,
             "info_params": {
                 "__class__": "MovementSystemInfoParams",
                 "module": "game.subsystems.scripts",
@@ -1895,7 +2077,7 @@
                         "activity_manager": false,
                         "physic_engine": false,
                         "animation_engine": true,
-                        "sound_engine": false,
+                        "sound_engine": true,
                         "input_manager": false,
                         "script_system": false
                     },
@@ -1903,10 +2085,40 @@
                         0
                     ],
                     "scripts": [
-                        2,
                         3,
-                        4
+                        4,
+                        5
                     ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "land_sound": "assets/audio/game/sounds/ANDY/jump/down.mp3",
+                        "fall_sound": "assets/audio/game/sounds/ANDY/fall/fall.mp3",
+                        "walk_sound": "assets/audio/game/sounds/ANDY/steps/steps.mp3"
+                    }
+                }
+            }
+        },
+        {
+            "id": 7,
+            "info_params": {
+                "__class__": "MousePositionInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "MousePosition",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": true,
+                        "script_system": false
+                    },
+                    "objects": [],
+                    "scripts": [],
                     "camera": false,
                     "clock": false,
                     "other": {}
@@ -1919,43 +2131,43 @@
             "id": 0,
             "type": "press",
             "key": 97,
-            "command_script_id": 2
+            "command_script_id": 3
         },
         {
             "id": 1,
             "type": "release",
             "key": 97,
-            "command_script_id": 2
+            "command_script_id": 3
         },
         {
             "id": 2,
             "type": "press",
             "key": 100,
-            "command_script_id": 3
+            "command_script_id": 4
         },
         {
             "id": 3,
             "type": "release",
             "key": 100,
-            "command_script_id": 3
+            "command_script_id": 4
         },
         {
             "id": 4,
             "type": "hold",
             "key": 119,
-            "command_script_id": 4
+            "command_script_id": 5
         },
         {
             "id": 5,
             "type": "hold",
             "key": 32,
-            "command_script_id": 4
+            "command_script_id": 5
         },
         {
             "id": 6,
-            "type": "mouse_hold",
+            "type": "mouse_press",
             "key": 1,
-            "command_script_id": 4
+            "command_script_id": 7
         }
     ],
     "cam_boxes": [
@@ -1967,8 +2179,8 @@
                     0
                 ],
                 "size": [
-                    80,
-                    120
+                    848,
+                    552
                 ]
             }
         }

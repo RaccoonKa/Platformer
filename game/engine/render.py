@@ -157,7 +157,8 @@ class LayerSystem:
             for obj in layer.objects:
                 if obj not in active_objects:
                     continue
-                self.main_surface.blit(obj.sprite,(obj.x,obj.y))
+                obj.draw_on(self.main_surface)
+                #self.main_surface.blit(obj.sprite,(obj.x,obj.y))
 
     def draw_by_camera(self,output_screen : pygame.surface.Surface, camera : Camera):
         output_screen.fill('black')
