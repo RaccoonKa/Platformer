@@ -4,7 +4,7 @@ from game.editor.editor_scripts import ButtonScript
 from game.engine.control import InputHandler
 from game.engine.objects import StaticObject
 from game.subsystems.control_commands import PressCommand, ReleaseCommand, HoldCommand
-from game.engine.script_system import Script
+from game.engine.script_system import Script, ScriptingSystem
 
 from game.editor.editor_objects import Button, TextObject, Text
 
@@ -64,12 +64,12 @@ class Mode:
     def update(self):
         pass
 
-
 class UI:
     def __init__(self, input_handler : InputHandler):
         self.modes : list[Mode] = list()
         self.current_mode : Mode = Mode("null")
         self.input_handler : InputHandler = input_handler
+        self.script_system : ScriptingSystem = ScriptingSystem()
 
     def add_mode(self, mode : Mode):
         self.modes.append(mode)
@@ -87,7 +87,9 @@ class UI:
                 return mode
         raise ValueError("[UI] Mode with this name not found")
 
-    def update(self):
+    def update(self, dt : float):
+        self.script_system.update(dt)
+
         self.current_mode.update()
 
     def draw(self, screen : pygame.Surface):

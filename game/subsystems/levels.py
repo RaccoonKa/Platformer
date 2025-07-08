@@ -16,6 +16,7 @@ from game.engine.script_system import ScriptingSystem, ScriptParams, ScriptInfoP
 from game.engine.sound import SoundEngine
 from game.subsystems.scripts import script_fabric_method
 from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
+from game.subsystems.ui import UI
 
 
 class GameEncoder(json.JSONEncoder):
@@ -375,11 +376,14 @@ class Game:
 
         self.exit = False
         self.full_exit = False
+        self.change_level = (False, 0)
+        self.pause = False
 
-    def load_level(self, level : Level):
-        if level.screen_size != self.screen_size:
-            self.screen_size = level.screen_size
-            self.screen = pygame.display.set_mode(size=self.screen_size, vsync=self.max_fps, flags = pygame.FULLSCREEN | pygame.SCALED)
+    def load_level(self, level : Level, num : int):
+        self.change_level = (False, num)
+
+        self.screen_size = level.screen_size
+        self.screen = pygame.display.set_mode(size=self.screen_size, vsync=self.max_fps, flags = pygame.FULLSCREEN | pygame.SCALED)
 
         self.layer_system = LayerSystem(size = level.size, screen = self.screen)
         self.physic_engine = PhysicEngine(g = level.g)
@@ -405,6 +409,8 @@ class Game:
         self._load_scripts(level)
 
         self._load_binds(level)
+
+        self._load_ui()
 
     def _load_sprites(self, level : Level):
         for data in level.sprites:
@@ -529,6 +535,9 @@ class Game:
             else:
                 self.input_manager.bind_key(key= data['key'], command = command, event_type = data['type'])
 
+    def _load_ui(self):
+        self.ui = UI(self.input_manager)
+
     def _object_from_data(self, class_type : str, need_hitbox : bool, info_params : Optional[StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams]) -> Optional[StaticObject, MovingObject, Player]:
         if info_params.get('sprite_id') == 0 or info_params.get('sprite_id'):
             sprite = self._get_sprite(sprite_id= info_params['sprite_id'])
@@ -608,7 +617,8 @@ class Game:
                 'animation_engine': self.animation_engine if script_info.systems['animation_engine'] else None,
                 'sound_engine': self.sound_engine if script_info.systems['sound_engine'] else None,
                 'input_manager': self.input_manager if script_info.systems['input_manager'] else None,
-                'script_system': self.script_system if script_info.systems['script_system'] else None
+                'script_system': self.script_system if script_info.systems['script_system'] else None,
+                'game' : self if script_info.systems['game'] else None
             },
 
             objects = [
@@ -628,10 +638,8 @@ class Game:
         self.exit = False
         self.full_exit = False
 
+        dt = 0
         while not self.exit:
-            fps = self.clock.get_fps()
-            dt = 1 / fps if fps != 0 else 0
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.exit = True
@@ -642,13 +650,14 @@ class Game:
 
             self.input_manager.update(dt)
 
-            self.script_system.update(dt)
+            if not self.pause:
+                self.script_system.update(dt)
 
-            self.physic_engine.update(dt, self.activity_manager)
+                self.physic_engine.update(dt, self.activity_manager)
 
-            self.animation_engine.update(dt, self.activity_manager)
+                self.animation_engine.update(dt, self.activity_manager)
 
-            self.camera_manager.update()
+                self.camera_manager.update()
 
             self.layer_system.update(self.activity_manager)
 
@@ -656,4 +665,6 @@ class Game:
 
             pygame.display.update()
 
-            self.clock.tick_busy_loop(self.max_fps)
+            dt = self.clock.tick_busy_loop(self.max_fps)/1000
+
+

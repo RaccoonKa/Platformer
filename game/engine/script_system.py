@@ -25,7 +25,8 @@ class ScriptInfoParams:
             'animation_engine' : False,
             'sound_engine' : False,
             'input_manager' : False,
-            'script_system' : False
+            'script_system' : False,
+            'game' : False
         }
         self.objects : list[int] = list()
         self.scripts : list[int] = list()

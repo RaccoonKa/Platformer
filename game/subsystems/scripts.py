@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import pygame.mixer
+
 from game.engine.script_system import ScriptParams, ScriptInfoParams, Script, CommandScript
-from game.engine.objects import StaticObject, Hitbox
+from game.engine.objects import Hitbox
 
 
 def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
@@ -36,6 +38,14 @@ def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
             return PlatformAppearSystem(params)
         case 'ZoneSwitch':
             return ZoneSwitchScript(params)
+        case 'MovementSwitcher':
+            return MovementSwitcher(params)
+        case 'MouseTeleport':
+            return MouseTeleport(params)
+        case 'MusicPlayer':
+            return MusicPlayer(params)
+        case 'ChangeLevel':
+            return ChangeLevel(params)
         case _:
             return Script(params)
 
@@ -78,7 +88,7 @@ class LogScript(Script):
             print("активных объектов:", len(self.activity_manager.get_active_objects()))
             print(
                 f"camera: {self.camera.x, self.camera.y}, player: {self.player.x, self.player.y}, fps: {self.clock.get_fps()}, frame_time: {dt}")
-            print("game time:", self.game_time)
+            print("game time:", self.game_time, "player lives:",self.player.lives)
             self.log_delay = 0
 
 
@@ -138,9 +148,9 @@ class MarioChaseScript(Script):
 class PatrolInfoParams(ScriptInfoParams):
     def __init__(self, patrol_obj_id : int, points : list[tuple[float,float]],
                  speed_x : float = 100, speed_y : float = -1, cyclic : bool = True,
-                 teleport : bool = False, reach_distance : float = 5):
+                 teleport : bool = False, reach_distance : float = 5, enabled : bool = True):
         super().__init__()
-        self.enabled = True
+        self.enabled = enabled
         self.type = 'Patrol'
         self.objects.append(patrol_obj_id)
         self.other = {
@@ -274,8 +284,11 @@ class MoveRightScript(CommandScript):
 
         self.first_time = True
 
+        self.block = False
+
     def start(self):
-        self.running = True
+        if not self.block:
+            self.running = True
         #print("Побежал вправо")
         # анимация бега вправо
 
@@ -333,13 +346,16 @@ class MoveLeftScript(CommandScript):
 
         self.first_time = True
 
+        self.block = False
+
     def start(self):
-        self.running = True
+        if not self.block:
+            self.running = True
         #print("Побежал влево")
         # анимация бега вправо
 
     def on_execute(self, dt : float, press : bool = False, hold : bool = False, release : bool = False) -> None:
-        if self.first_time :
+        if self.first_time:
             self.enabled = True
             self.first_time = False
 
@@ -396,8 +412,10 @@ class JumpScript(CommandScript):
         self.jump_speed = other['jump_speed']
         self.land_sound = other['land_sound']
 
+        self.block = False
+
     def start(self) -> None:
-        if self.obj.is_grounded:
+        if self.obj.is_grounded and not self.block:
             self.obj.velocity_y = max(-self.jump_speed, -self.obj.max_speed_y)
 
             self.sound_engine.play_sound(self.jump_sound)
@@ -533,9 +551,11 @@ class FlagSwitchScript(Script):
 
 
 class PlaySoundInfoParams(ScriptInfoParams):
-    def __init__(self, sound : str, loops : int = 0 , volume : float = None):
+    def __init__(self, sound : str, loops : int = 0, volume : float = None , enabled : bool = False):
         super().__init__()
         self.type = "PlaySound"
+        self.enabled = enabled
+
         self.systems['sound_engine'] = True
 
         self.other = {
@@ -545,9 +565,8 @@ class PlaySoundInfoParams(ScriptInfoParams):
         }
 
 class PlaySoundScript(Script):
-    def __init__(self, params : ScriptParams):
+    def __init__(self, params: ScriptParams) -> None:
         super().__init__(params)
-
         self.sound_engine = params['systems']['sound_engine']
 
         other = params['other']
@@ -559,14 +578,17 @@ class PlaySoundScript(Script):
         self.kill = True
 
     def start(self) -> None:
+        self.play()
         self.enabled = True
+
+    def play(self):
+        self.sound_engine.play_sound(name = self.sound, loops = self.loops, volume= self.volume)
 
     def stop(self) -> None:
         self.enabled = False
 
     def update(self, dt: float) -> None:
-        self.sound_engine.play_sound(name = self.sound, loops = self.loops, volume = self.volume)
-        self.stop()
+        pass
 
 
 class ChangeAnimInfoParams(ScriptInfoParams):
@@ -612,7 +634,7 @@ class ChangeAnim(Script):
 
 class MovementSystemInfoParams(ScriptInfoParams):
     def __init__(self, target_id : int, m_l_scr_id : int, m_r_scr_id : int, j_scr_id : int, fall_sound : str = None,
-                 land_sound : str = None, walk_sound : str = None, enabled : bool = True):
+                 land_sound : str = None, walk_sound : str = None, damage_sound : str = None, fall_damage_threshold : int = 500, enabled : bool = True):
         super().__init__()
         self.enabled = enabled
         self.type = 'MovementSystem'
@@ -626,7 +648,9 @@ class MovementSystemInfoParams(ScriptInfoParams):
         self.other = {
             'land_sound': land_sound,
             'fall_sound': fall_sound,
-            'walk_sound': walk_sound
+            'walk_sound': walk_sound,
+            'damage_sound' : damage_sound,
+            'fall_damage_threshold' : fall_damage_threshold
         }
 
 class MovementSystemScript(Script):
@@ -645,6 +669,7 @@ class MovementSystemScript(Script):
         self.land_sound = other.get('land_sound')
         self.fall_sound = other.get('fall_sound')
         self.walk_sound = other.get('walk_sound')
+        self.damage_sound = other.get('damage_sound')
 
         self.moving_left = False
         self.moving_right = False
@@ -654,6 +679,11 @@ class MovementSystemScript(Script):
 
         self.was_falling = False
         self.is_walk_sound_playing = False
+
+        self.fall_damage_threshold = other.get('fall_damage_threshold')
+        self.fall_start_y = 0
+        self.is_falling = False
+        self.max_fall_speed = 0
 
     def destroy(self) -> None:
         self.kill = True
@@ -666,6 +696,24 @@ class MovementSystemScript(Script):
 
     def update(self, dt: float) -> None:
         is_falling = not self.target.is_grounded and self.target.velocity_y > 0
+
+        if is_falling:
+            if not self.is_falling:
+                self.is_falling = True
+                self.fall_start_y = self.target.y
+                self.max_fall_speed = 0
+            else:
+                if self.target.velocity_y > self.max_fall_speed:
+                    self.max_fall_speed = self.target.velocity_y
+        elif self.target.is_grounded and self.is_falling:
+            self.is_falling = False
+            fall_height = self.target.y - self.fall_start_y
+
+            if (fall_height > self.fall_damage_threshold or
+                    self.max_fall_speed > self.target.max_speed_y * 0.8):
+                if hasattr(self.target, 'lives'):
+                    self.target.lives -= 1
+                    if self.damage_sound: self.sound_engine.play_sound(self.damage_sound)
 
         if not self.was_falling and is_falling and self.fall_sound:
             self.sound_engine.play_sound(self.fall_sound)
@@ -930,7 +978,6 @@ class ZoneSwitchScript(Script):
 
     def destroy(self) -> None:
         self.kill = True
-        print('ded')
 
     def stop(self) -> None:
         self.enabled = False
@@ -950,6 +997,182 @@ class ZoneSwitchScript(Script):
         if not collide and self.target_in_zone:
             self.target_in_zone = False
 
+
+class MovementSwitcherInfoParams(ScriptInfoParams):
+    def __init__(self, max_switches : int = -1, scripts_block_switch_ids : list[int] = None,
+                 scripts_to_unblock_ids : list[int] = None, scripts_to_block_ids : list[int] = None, enabled : bool = True):
+        super().__init__()
+        self.type = 'MovementSwitcher'
+        self.enabled = enabled
+
+
+        if scripts_block_switch_ids:
+            self.scripts += scripts_block_switch_ids
+        if scripts_to_unblock_ids:
+            self.scripts += scripts_to_unblock_ids
+        if scripts_to_block_ids:
+            self.scripts += scripts_to_block_ids
+
+        self.other = {
+            "switch" : len(scripts_block_switch_ids) if scripts_block_switch_ids else 0,
+            "toggle_on" : len(scripts_to_unblock_ids) if scripts_to_unblock_ids else 0,
+            "toggle_off" : len(scripts_to_block_ids) if scripts_to_block_ids else 0,
+            "switches" : max_switches
+        }
+
+class MovementSwitcher(Script):
+    def __init__(self, params : ScriptParams):
+        super().__init__(params)
+
+        all_scripts = params['scripts']
+        other = params['other']
+
+        self.scripts_switch : list[Script] = all_scripts[0:other['switch']]
+        self.scripts_toggle_on : list[Script] = all_scripts[other['switch']:other['switch']+other['toggle_on']]
+        self.scripts_toggle_off : list[Script] = all_scripts[other['switch']+other['toggle_on'] : other['switch']+other['toggle_on'] + other['toggle_off']]
+        self.max_switches = other['switches']
+
+        self.need_switch = False
+
+        self.switches = 0
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        if self.need_switch:
+            self.switch()
+            self.need_switch = False
+
+    def switch(self):
+        for script in self.scripts_switch:
+            script.block = not script.block
+        for script in self.scripts_toggle_on:
+            script.block = False
+        for script in self.scripts_toggle_off:
+            script.block = True
+            script.stop()
+        self.switches += 1
+        if self.switches == self.max_switches and self.max_switches != -1:
+            self.destroy()
+
+
+class MouseTeleportInfoParams(ScriptInfoParams):
+    def __init__(self, target_id : int, enabled : bool = True):
+        super().__init__()
+        self.type = "MouseTeleport"
+        self.enabled =  enabled
+        self.systems['input_manager'] = True
+        self.objects = [target_id]
+
+class MouseTeleport(CommandScript):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.target = params['objects'][0]
+
+        self.input_handler = params['systems']['input_manager']
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        pass
+
+    def on_execute(self, dt: float, press: bool = False, hold: bool = False, release: bool = False) -> None:
+        if press:
+            self.target.move_to(self.input_handler.get_mouse_position())
+
+
+class MusicPlayerInfoParams(ScriptInfoParams):
+    def __init__(self, playlist : list[tuple[str,float]], enabled : bool = False):
+        super().__init__()
+        self.type = "MusicPlayer"
+        self.enabled = enabled
+
+        self.systems['sound_engine'] = True
+
+        self.other['playlist'] = playlist
+
+class MusicPlayer(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+        self.sound_engine = params['systems']['sound_engine']
+
+        self.playlist = params['other']['playlist']
+
+        self.current_play = None
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.play()
+        self.enabled = True
+
+    def play(self):
+        self.current_play = self.playlist[0]
+        if len(self.playlist) > 1:
+            self.playlist = self.playlist[1:] + self.playlist[0]
+
+        self.sound_engine.play_music(file_path=self.current_play[0], volume= self.current_play[1])
+
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        if not pygame.mixer.music.get_busy():
+            self.play()
+        pass
+
+
+class ChangeLevelInfoParams(ScriptInfoParams):
+    def __init__(self, to_num : int):
+        super().__init__()
+        self.type = 'ChangeLevel'
+        self.enabled = False
+
+        self.systems['game'] = True
+
+        self.other['num'] = to_num
+
+class ChangeLevel(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.game = params['systems']['game']
+
+        self.num = params['other']['num']
+        
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.enabled = True
+
+        self.game.exit = True
+        self.game.change_level = (True, self.num)
+
+        self.destroy()
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        pass
 
 #
 # layer_system

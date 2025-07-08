@@ -1,6 +1,4 @@
 import pygame
-import os
-from typing import Optional
 
 from game.engine.control import InputHandler
 from game.engine.objects import StaticObject, MovingObject
@@ -8,12 +6,11 @@ from game.engine.render import LayerSystem, Layer, Camera, ActivityManager
 from game.engine.script_system import ScriptingSystem, Script
 from game.subsystems.levels import Level
 
-from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams
 from game.subsystems.levels import SpriteData, ObjectData, BindData, ScriptData, AnimationData, HitboxData, SoundData, CamBoxData
 
-from game.editor.ui import UI, Mode
-from game.editor.editor_objects import Button, TextObject, Text
-from game.editor.editor_scripts import ButtonScript, PrintScript, ChangeMode
+from game.subsystems.ui import UI, Mode
+from game.editor.editor_objects import TextObject, Text
+from game.editor.editor_scripts import PrintScript, ChangeMode
 
 
 class Editor:

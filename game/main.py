@@ -1,233 +1,26 @@
 import pygame
-import random
 
-from game.subsystems.scripts import LogInfoParams, MarioChaseInfoParams, PatrolInfoParams, \
-    MoveLeftInfoParams, MoveRightInfoParams, JumpInfoParams, ScriptSwitcherInfoParams, FlagSwitchInfoParams, \
+from game.subsystems.scripts import LogInfoParams, PatrolInfoParams, \
+    MoveLeftInfoParams, MoveRightInfoParams, JumpInfoParams, ScriptSwitcherInfoParams, \
     PlaySoundInfoParams, ChangeAnimInfoParams, MovementSystemInfoParams, MousePositionInfoParams, \
-    PlatformAppearSystemInfoParams, ZoneSwitchInfoParams
+    PlatformAppearSystemInfoParams, ZoneSwitchInfoParams, MovementSwitcherInfoParams, MouseTeleportInfoParams, \
+    MusicPlayerInfoParams, ChangeLevelInfoParams
 
 from game.subsystems.levels import Game, Level
 
 from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams, HitboxParams
 
 
-def create_test_level()-> Level:
-    level = Level()
-    level.size = (5000,1080)
-
-    player_sprite_id = level.add_sprite(
-        path ='assets/test_level/character/char0.png'
-    )
-
-    #player
-    player_id = level.set_player(
-        params=PlayerObjectInfoParams(
-            pos = (0,0),
-            sprite_id = player_sprite_id,
-
-            max_speed_x = 10*16,
-            max_speed_y = 20*16,
-            ground_friction_x = 3,
-            air_friction_x = 0.05,
-            air_friction_y = 0,
-            gravitate = True,
-            velocity_x = 0,
-            velocity_y = 0,
-
-            lives = 5
-        ),
-        physics = True,
-        physics_type = 'Stoppable',
-        layer = 1,
-        force_active = True
-    )
-
-    mario_sprite_id = level.add_sprite("assets/character/mario.png")
-    #mario1
-    mario_id = level.add_object(
-        params= MovingObjectInfoParams(
-            pos = (30, 1080-70-70-70-70-35),
-            sprite_id = mario_sprite_id,
-            max_speed_x= 5*16,
-            max_speed_y=20*16,
-            gravitate= True,
-            velocity_x=0,
-            velocity_y=0,
-            ground_friction_x = 3,
-            air_friction_x = 0.05,
-            air_friction_y = 0
-        ),
-        physics = True,
-        physics_type = 'Stoppable',
-        layer=1,
-        force_active=False,
-        class_type= 'Moving'
-    )
-
-    #mario2
-    mario2_id = level.add_object(
-        params=MovingObjectInfoParams(
-            pos=(1500, 1080 - 70 - 70 - 70),
-            sprite_id=mario_sprite_id,
-            max_speed_x=10 * 16,
-            max_speed_y=20 * 16,
-            gravitate=True,
-            velocity_x=0,
-            velocity_y=0,
-            ground_friction_x=3,
-            air_friction_x=0.05,
-            air_friction_y=0
-        ),
-        physics=True,
-        physics_type='Stoppable',
-        layer=1,
-        force_active=False,
-        class_type='Moving'
-    )
-
-    background_sprite_id = level.add_sprite("assets/background/background.png",)
-
-    #background
-    level.add_object(
-        class_type="Static",
-        physics=False,
-        layer=0,
-        need_hitbox= False,
-        params=StaticObjectInfoParams(
-            pos=(0, 0),
-            sprite_id=background_sprite_id
-        )
-
-    )
-
-    brick_sprite_id = level.add_sprite("assets/test/brick.png")
-
-    #ground
-    for i in range(73):
-        level.add_object(
-            class_type = "Static",
-            physics = True,
-            physics_type = "Static",
-            layer = 1,
-            params = StaticObjectInfoParams(
-                pos = (i * 70, 1080-35),
-                sprite_id = brick_sprite_id
-            )
-        )
-
-    #platform
-    for i in range(100, 5000, 70):
-        for j in range(0, 1080 - 35 * 3, 35):
-            if random.randint(0, 100) % 100 == 0:
-                level.add_object(
-                    class_type="Static",
-                    physics=True,
-                    physics_type="Static",
-                    layer=1,
-                    params=StaticObjectInfoParams(
-                        pos=(i,j),
-                        sprite_id = brick_sprite_id
-                    )
-                )
-
-    #the_flying_brick
-    level.add_object(
-        class_type = "Moving",
-        physics = True,
-        physics_type = "Unstoppable",
-        layer=1,
-        params= MovingObjectInfoParams
-        (
-            pos = (-200, 1080-70-70-70-70-35),
-            sprite_id= brick_sprite_id,
-
-            max_speed_x = 5*16,
-            max_speed_y = 5*16,
-            gravitate = False,
-            velocity_x = 25,
-            velocity_y = -5,
-            ground_friction_x=0,
-            air_friction_x=0,
-            air_friction_y=0
-        )
-    )
-
-    #cam_boxes
-    level.add_cam_box(
-        hitbox= HitboxParams(
-            pos = (0,0),
-            size = (5000-1920,0)
-        )
-    )
-
-    flag_sprite_id = level.add_sprite('assets/test/flagbox.png')
-
-    #flag
-    flag_id = level.add_object(
-        class_type = "Static",
-        physics = False,
-        force_active = False,
-        layer = None,
-        need_hitbox= True,
-        params= StaticObjectInfoParams(
-            pos = (70,1080-500),
-            sprite_id = flag_sprite_id
-        )
-    )
-
-    jump_sound_path = 'assets/test_level/sound/jump.mp3'
-    zombie_path = "assets/test_level/sound/zombie.mp3"
-
-    anim_name = 'rotate'
-
-    anim_sprite_id1 = level.add_sprite("assets/character/char0.png", size=(100,100))
-    anim_sprite_id2 = level.add_sprite("assets/character/char1.png", size=(100,100))
-
-    level.add_animation(
-        object_id=player_id,
-        name=anim_name,
-        delay=2,
-        frames_ids=[anim_sprite_id1, anim_sprite_id2],
-        change_hitboxes= True
-    )
-
-    level.add_sound('sound', jump_sound_path,0.1)
-    level.add_sound('sound', zombie_path, 0.3)
-
-    level.add_script(LogInfoParams(player_id))
-    level.add_script(MarioChaseInfoParams(mario_id,player_id))
-    level.add_script(PatrolInfoParams(mario2_id, [(1500,970),[2000,970]]))
-
-    zombie_sound_id = level.add_script(PlaySoundInfoParams(zombie_path))
-    anim_change_id = level.add_script(ChangeAnimInfoParams(target_id= player_id, animation_name = anim_name))
-
-
-    switcher_id = level.add_script(ScriptSwitcherInfoParams(scripts_switch_ids=[anim_change_id], scripts_toggle_on_ids=[zombie_sound_id], enabled= True))
-    level.add_script(FlagSwitchInfoParams(flag_obj_id= flag_id, target_obj_id= player_id,switcher_id = switcher_id, enabled = True))
-
-
-
-    m_l_id = level.add_script(MoveLeftInfoParams(player_id, 500, 50, 10 * 16))
-    m_r_id = level.add_script(MoveRightInfoParams(player_id, 500, 50, 10 * 16))
-    j_id = level.add_script(JumpInfoParams(player_id,20*16,jump_sound_path))
-
-    level.add_binds('press', pygame.K_a, m_l_id)
-    level.add_binds('release', pygame.K_a, m_l_id)
-    level.add_binds('press', pygame.K_d, m_r_id)
-    level.add_binds('release', pygame.K_d, m_r_id)
-    level.add_binds('hold', pygame.K_w, j_id)
-    level.add_binds('hold', pygame.K_SPACE, j_id)
-    level.add_binds('mouse_hold', pygame.BUTTON_LEFT, j_id)
-    return level
-
-
 def create_level_1()-> Level:
+    level_path = "saves/level1/level1.json"
+
     level = Level()
     level.screen_size = (1152,648)
     level.size = (2000,1200)
     level.g = 10*16*2
 
-    sfx_volume = 1
+    sounds_volume = 0.2
+    music_volume = 0.2
 
     #cameraboxes
     level.add_cam_box(
@@ -260,237 +53,81 @@ def create_level_1()-> Level:
             velocity_x=0,
             velocity_y=0,
 
-            lives= 5
+            lives= 3
         ),
         layer = 2,
         force_active = True,
         need_hitbox = False
     )
 
+    # sounds #todo
+    jump_sound_path = 'assets/audio/game/sounds/ANDY/jump/up.mp3'
+    level.add_sound('sound', jump_sound_path, sounds_volume)
+    land_sound_path = 'assets/audio/game/sounds/ANDY/jump/down.mp3'
+    level.add_sound('sound', land_sound_path, sounds_volume)
+    fall_sound_path = 'assets/audio/game/sounds/ANDY/fall/fall.mp3'
+    level.add_sound('sound', fall_sound_path, sounds_volume)
+    walk_sound_path = 'assets/audio/game/sounds/ANDY/steps/steps.mp3'
+    level.add_sound('sound', walk_sound_path, sounds_volume)
+    damage_sound_path = 'assets/audio/game/sounds/ANDY/damage/damage.mp3'
+    level.add_sound('sound', damage_sound_path, sounds_volume)
 
-    #borders
-    horizontal_border_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/error.png",
-        hb_size=(2000, 50),
-        hb_offset=(0, 0)
+    server_sound_path = 'assets/audio/game/sounds/platforms/platform_server.mp3'
+    level.add_sound('sound', server_sound_path, sounds_volume)
+    printer_sound_path = 'assets/audio/game/sounds/platforms/platform_printer.mp3'
+    level.add_sound('sound', printer_sound_path, sounds_volume)
+    platform_bug_sound_path = 'assets/audio/game/sounds/platforms/platform_bug_texture.mp3'
+    level.add_sound('sound', platform_bug_sound_path, sounds_volume)
+    rain_sound_path = 'assets/audio/game/sounds/rain/rain.mp3'
+    level.add_sound('sound', rain_sound_path, sounds_volume)
+
+    #music
+    music_script_id = level.add_script(
+        MusicPlayerInfoParams(
+            enabled= False,
+            playlist=[
+                ('assets/audio/game/game_music/0.mp3', music_volume),
+                ('assets/audio/game/game_music/1.mp3', music_volume)
+            ]
+        )
     )
 
-
-    vertical_border_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/error.png",
-        hb_size=(50, 1200),
-        hb_offset=(0, 0)
-    )
-
-    #down
-    level.add_object(
-        class_type= 'Static',
-        physics = True,
-        physics_type= 'Static',
-        params = StaticObjectInfoParams(
-            pos = (0,1200-25),
-            sprite_id= horizontal_border_spr_id,
-        ),
-        layer= None,
-        force_active = False,
-        need_hitbox= True
-    )
-
-    #up
-    level.add_object(
-        class_type='Static',
-        physics=True,
-        physics_type='Static',
-        params=StaticObjectInfoParams(
-            pos=(0, -50),
-            sprite_id=horizontal_border_spr_id,
-        ),
-        layer=None,
-        force_active=False,
-        need_hitbox=True
-    )
-
-    #left
-    level.add_object(
-        class_type='Static',
-        physics=True,
-        physics_type='Static',
-        params=StaticObjectInfoParams(
-            pos=(-50, 0),
-            sprite_id=vertical_border_spr_id,
-        ),
-        layer=None,
-        force_active=False,
-        need_hitbox=True
-    )
-
-    #right
-    level.add_object(
-        class_type='Static',
-        physics=True,
-        physics_type='Static',
-        params=StaticObjectInfoParams(
-            pos=(2000, 0),
-            sprite_id=vertical_border_spr_id,
-        ),
-        layer=None,
-        force_active=False,
-        need_hitbox=True
-    )
-
-    # background #todo
-    bg_sprite_id = level.add_sprite(
-        path = "assets/pictures/game/background_game/bg0.png",
-        hb_size = (0,0),
-        hb_offset = (0,0)
-    )
-
-    bg_id = level.add_object(
-        class_type= "Static",
-        physics=False,
-        params= StaticObjectInfoParams(
-            pos = (0,0),
-            sprite_id= bg_sprite_id,
-        ),
-        layer= 0,
-        force_active=True,
-        need_hitbox=False
-    )
-
-    rain_sprite_id = level.add_sprite(
-        path = "assets/pictures/game/rain/0.png",
-        size= (2000,1200)
-    )
-
-    rain_id = level.add_object(
-        class_type= "Static",
-        physics=False,
-        params= StaticObjectInfoParams(
-            pos = (0,0),
-            sprite_id= rain_sprite_id,
-        ),
-        layer= 3,
-        force_active=True,
-        need_hitbox=False
-    )
-
-    #rain animation
-    rain_anim_name = "rain"
-    num = 9
-    core = "assets/pictures/game/rain/"
-    sprites = [level.add_sprite(path=f"{core}{i}.png", size=(2000,1200)) for i in range(0, num)]
-
-    level.add_animation(
-        object_id=rain_id,
-        name=rain_anim_name,
-        delay= 1 / num,
-        frames_ids=sprites,
-        change_hitboxes=False
-    )
-
+    #rain
     level.add_script(
-        ChangeAnimInfoParams(
-            target_id= rain_id,
-            animation_name= rain_anim_name,
+        PlaySoundInfoParams(
+            sound= rain_sound_path,
+            loops = -1,
             enabled= True
         )
     )
 
-    #platforms #todo
-    platform0_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/platform0.png",
-        size = (254,60),
-        hb_size = (254,50),
-        hb_offset=(0,10)
-    )
-    platform1_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/platform1.png",
-        size = (107,66),
-        hb_size=(107,50),
-        hb_offset=(0,16)
-    )
-    platform2_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/platform2.png"
-    )
-    platform3_spr_id = level.add_sprite(
-        path="assets/pictures/game/things/platform3.png"
-    )
+    # binds #todo
+    m_l_id = level.add_script(MoveLeftInfoParams(player_id, 500, 50, 10 * 16))
+    m_r_id = level.add_script(MoveRightInfoParams(player_id, 500, 50, 10 * 16))
+    j_id = level.add_script(JumpInfoParams(player_id, 20 * 16, jump_sound_path, land_sound_path))
 
-    platform_ids = [level.add_object(
-        class_type= "Static",
-        physics= True,
-        physics_type= "Static",
-        params= StaticObjectInfoParams(
-            pos = (1800-i*350,1100-i*100),
-            sprite_id = platform0_spr_id
-        ),
-        layer= 1,
-        force_active= False,
-        need_hitbox= True
-    ) for i in range(0,6)]
-
-    platform_ids.append(level.add_object(
-        class_type="Static",
-        physics=True,
-        physics_type="Static",
-        params=StaticObjectInfoParams(
-            pos=(420, 500),
-            sprite_id=platform0_spr_id
-        ),
-        layer=1,
-        force_active=False,
-        need_hitbox=True
-    ))
-    platform_ids+= [
-        level.add_object(
-            class_type="Static",
-            physics=True,
-            physics_type="Static",
-            params=StaticObjectInfoParams(
-                pos=(770+300*i, 500-50*i),
-                sprite_id=platform1_spr_id
-            ),
-            layer=1,
-            force_active=False,
-            need_hitbox=True
-        ) for i in range(4)
-    ]
-
-    platform_ids.append(level.add_object(
-        class_type="Static",
-        physics=True,
-        physics_type="Static",
-        params=StaticObjectInfoParams(
-            pos=(1810, 310),
-            sprite_id=platform0_spr_id
-        ),
-        layer=1,
-        force_active=False,
-        need_hitbox=True
-    ))
-
-    spawn_sound_name = "assets/audio/game/sounds/other/glitch.MP3"
-    level.add_sound(filename=spawn_sound_name, volume=0.1*sfx_volume, type_="sound")
-
-    platform_appear_id = level.add_script(
-        PlatformAppearSystemInfoParams(
-            platforms_ids=platform_ids,
-            target_id=player_id,
-            appear_sounds=[(spawn_sound_name,-1)]*len(platform_ids),
-            flag_size= (100,10),
-            enabled= False
-        )
-    )
-
-    platform_appear_switcher = level.add_script(ScriptSwitcherInfoParams(scripts_toggle_on_ids = [platform_appear_id], max_switches= 1))
     level.add_script(
-        ZoneSwitchInfoParams(
-            target_obj_id= player_id,
-            switcher_id= platform_appear_switcher,
-            zone_pos= (1450,970),
-            zone_size=(50,200)
+        MovementSystemInfoParams(
+            target_id=player_id,
+            m_l_scr_id=m_l_id,
+            m_r_scr_id=m_r_id,
+            j_scr_id=j_id,
+            enabled=True,
+            fall_sound=fall_sound_path,
+            land_sound=land_sound_path,
+            walk_sound=walk_sound_path,
+            damage_sound= damage_sound_path,
+            fall_damage_threshold= 500
         )
     )
+
+    level.add_binds('press', pygame.K_a, m_l_id)
+    level.add_binds('release', pygame.K_a, m_l_id)
+    level.add_binds('press', pygame.K_d, m_r_id)
+    level.add_binds('release', pygame.K_d, m_r_id)
+    level.add_binds('press', pygame.K_w, j_id)
+    level.add_binds('press', pygame.K_SPACE, j_id)
+
 
     #animations
     #walk left
@@ -593,55 +230,337 @@ def create_level_1()-> Level:
         change_hitboxes=False
     )
 
-    #scripts #todo
-    level.add_script(LogInfoParams(player_id))
+    #borders
+    horizontal_border_spr_id = level.add_sprite(
+        path="assets/pictures/game/things/error.png",
+        hb_size=(2000, 50),
+        hb_offset=(0, 0)
+    )
 
-    #sounds #todo
-    jump_sound_path = 'assets/audio/game/sounds/ANDY/jump/up.mp3'
-    level.add_sound('sound',jump_sound_path, 0.1*sfx_volume)
-    land_sound_path = 'assets/audio/game/sounds/ANDY/jump/down.mp3'
-    level.add_sound('sound', land_sound_path, 0.1*sfx_volume)
-    fall_sound_path = 'assets/audio/game/sounds/ANDY/fall/fall.mp3'
-    level.add_sound('sound', fall_sound_path, 0.1*sfx_volume)
-    walk_sound_path = 'assets/audio/game/sounds/ANDY/steps/steps.mp3'
-    level.add_sound('sound', walk_sound_path, 0.1*sfx_volume)
 
-    #binds #todo
-    m_l_id = level.add_script(MoveLeftInfoParams(player_id, 500, 50, 10 * 16))
-    m_r_id = level.add_script(MoveRightInfoParams(player_id, 500, 50, 10 * 16))
-    j_id = level.add_script(JumpInfoParams(player_id, 20 * 16, jump_sound_path, land_sound_path))
+    vertical_border_spr_id = level.add_sprite(
+        path="assets/pictures/game/things/error.png",
+        hb_size=(50, 1200),
+        hb_offset=(0, 0)
+    )
+
+
+    #down
+    level.add_object(
+        class_type= 'Static',
+        physics = True,
+        physics_type= 'Static',
+        params = StaticObjectInfoParams(
+            pos = (0,1200-25),
+            sprite_id= horizontal_border_spr_id,
+        ),
+        layer= None,
+        force_active = False,
+        need_hitbox= True
+    )
+
+    #up
+    level.add_object(
+        class_type='Static',
+        physics=True,
+        physics_type='Static',
+        params=StaticObjectInfoParams(
+            pos=(0, -50),
+            sprite_id=horizontal_border_spr_id,
+        ),
+        layer=None,
+        force_active=False,
+        need_hitbox=True
+    )
+
+    #left
+    level.add_object(
+        class_type='Static',
+        physics=True,
+        physics_type='Static',
+        params=StaticObjectInfoParams(
+            pos=(-50, 0),
+            sprite_id=vertical_border_spr_id,
+        ),
+        layer=None,
+        force_active=False,
+        need_hitbox=True
+    )
+
+    #right
+    level.add_object(
+        class_type='Static',
+        physics=True,
+        physics_type='Static',
+        params=StaticObjectInfoParams(
+            pos=(2000, 320),
+            sprite_id=vertical_border_spr_id,
+        ),
+        layer=None,
+        force_active=False,
+        need_hitbox=True
+    )
+
+    # background #todo
+    bg_sprite_id = level.add_sprite(
+        path = "assets/pictures/game/background_game/bg0.png",
+        hb_size = (0,0),
+        hb_offset = (0,0)
+    )
+
+    bg_id = level.add_object(
+        class_type= "Static",
+        physics=False,
+        params= StaticObjectInfoParams(
+            pos = (0,0),
+            sprite_id= bg_sprite_id,
+        ),
+        layer= 0,
+        force_active=True,
+        need_hitbox=False
+    )
+
+    rain_sprite_id = level.add_sprite(
+        path = "assets/pictures/game/rain/0.png",
+        size= (2000,1200)
+    )
+
+    rain_id = level.add_object(
+        class_type= "Static",
+        physics=False,
+        params= StaticObjectInfoParams(
+            pos = (0,0),
+            sprite_id= rain_sprite_id,
+        ),
+        layer= 3,
+        force_active=True,
+        need_hitbox=False
+    )
+
+    #rain animation
+    rain_anim_name = "rain"
+    num = 9
+    core = "assets/pictures/game/rain/"
+    sprites = [level.add_sprite(path=f"{core}{i}.png", size=(2000,1200)) for i in range(0, num)]
+
+    level.add_animation(
+        object_id=rain_id,
+        name=rain_anim_name,
+        delay= 1 / num,
+        frames_ids=sprites,
+        change_hitboxes=False
+    )
 
     level.add_script(
-        MovementSystemInfoParams(
-            target_id = player_id,
-            m_l_scr_id = m_l_id,
-            m_r_scr_id = m_r_id,
-            j_scr_id = j_id,
-            enabled = True,
-            fall_sound= fall_sound_path,
-            land_sound= land_sound_path,
-            walk_sound= walk_sound_path
+        ChangeAnimInfoParams(
+            target_id= rain_id,
+            animation_name= rain_anim_name,
+            enabled= True
         )
     )
 
-    level.add_binds('press', pygame.K_a, m_l_id)
-    level.add_binds('release', pygame.K_a, m_l_id)
-    level.add_binds('press', pygame.K_d, m_r_id)
-    level.add_binds('release', pygame.K_d, m_r_id)
-    level.add_binds('press', pygame.K_w, j_id)
-    level.add_binds('press', pygame.K_SPACE, j_id)
+    #platforms #todo
+    platform0_spr_id = level.add_sprite(
+        path="assets/pictures/game/things/platform0.png",
+        size = (254,60),
+        hb_size = (254,50),
+        hb_offset=(0,10)
+    )
+    platform1_spr_id = level.add_sprite(
+        path="assets/pictures/game/things/platform1.png",
+        size = (107,66),
+        hb_size=(107,50),
+        hb_offset=(0,16)
+    )
+    platform_bug_spr_id = level.add_sprite(
+        path="assets/pictures/game/things/platform2.png"
+    )
+    platform2_spr_id = level.add_sprite(
+        path="assets/pictures/game/things/platform3.png"
+    )
 
+    platform_ids = [level.add_object(
+        class_type= "Static",
+        physics= True,
+        physics_type= "Static",
+        params= StaticObjectInfoParams(
+            pos = (1800-i*350,1100-i*100),
+            sprite_id = platform0_spr_id
+        ),
+        layer= 1,
+        force_active= False,
+        need_hitbox= True
+    ) for i in range(0,6)]
+
+    platform_ids.append(level.add_object(
+        class_type="Static",
+        physics=True,
+        physics_type="Static",
+        params=StaticObjectInfoParams(
+            pos=(420, 500),
+            sprite_id=platform0_spr_id
+        ),
+        layer=1,
+        force_active=False,
+        need_hitbox=True
+    ))
+    platform_ids+= [
+        level.add_object(
+            class_type="Static",
+            physics=True,
+            physics_type="Static",
+            params=StaticObjectInfoParams(
+                pos=(770+300*i, 500-50*i),
+                sprite_id=platform1_spr_id
+            ),
+            layer=1,
+            force_active=False,
+            need_hitbox=True
+        ) for i in range(4)
+    ]
+
+    platform_ids.append(level.add_object(
+        class_type="Moving",
+        physics=True,
+        physics_type="Unstoppable",
+        params=MovingObjectInfoParams(
+            pos=(1810, 310),
+            sprite_id=platform_bug_spr_id,
+            max_speed_x= 50,
+            max_speed_y= 0,
+            velocity_x= 0,
+            velocity_y= 0,
+            ground_friction_x= 0,
+            air_friction_x= 0,
+            air_friction_y= 0,
+            gravitate= False
+        ),
+        layer=1,
+        force_active=False,
+        need_hitbox=True
+    ))
+
+    platform_appear_id = level.add_script(
+        PlatformAppearSystemInfoParams(
+            platforms_ids=platform_ids,
+            target_id=player_id,
+            appear_sounds=[(server_sound_path,-1)]*6 + [(printer_sound_path,-1)]*4 + [(platform_bug_sound_path,-1)],
+            flag_size= (100,10),
+            enabled= False
+        )
+    )
+
+    platform_appear_switcher = level.add_script(
+        ScriptSwitcherInfoParams(
+            scripts_toggle_on_ids = [platform_appear_id, music_script_id],
+            max_switches= 1
+        )
+    )
+    level.add_script(
+        ZoneSwitchInfoParams(
+            target_obj_id= player_id,
+            switcher_id= platform_appear_switcher,
+            zone_pos= (1450,970),
+            zone_size=(50,200),
+        )
+    )
+
+    move_switcher_id = level.add_script(
+        MovementSwitcherInfoParams(
+            scripts_to_block_ids= [m_r_id, m_l_id, j_id],
+            max_switches = 1,
+            enabled= True
+        )
+    )
+
+    patrol_id = level.add_script(
+        PatrolInfoParams(
+            patrol_obj_id=platform_ids[-1],
+            points = [(2500,310),(1810,310)],
+            enabled = False
+        )
+    )
+    patrol_switcher_id = level.add_script(
+        ScriptSwitcherInfoParams(
+            scripts_toggle_on_ids= [patrol_id],
+            max_switches= 1,
+            enabled= True
+        )
+    )
+
+    last_platform_zone_switch_move = level.add_script(
+        ZoneSwitchInfoParams(
+            zone_pos = (1810, 300),
+            zone_size= (80,10),
+            switcher_id= move_switcher_id,
+            target_obj_id= player_id,
+            enabled= True
+        )
+    )
+    last_platform_zone_switch_patrol = level.add_script(
+        ZoneSwitchInfoParams(
+            zone_pos=(1810, 300),
+            zone_size=(80, 10),
+            switcher_id=patrol_switcher_id,
+            target_obj_id=player_id,
+            enabled= True
+        )
+    )
+
+    level_to_next = level.add_script(
+        ChangeLevelInfoParams(
+            to_num= 2
+        )
+    )
+
+    level_to_this = level.add_script(
+        ChangeLevelInfoParams(
+            to_num=1
+        )
+    )
+
+    switcher_to_next = level.add_script(
+        ScriptSwitcherInfoParams(
+            enabled= True,
+            scripts_toggle_on_ids=[level_to_next]
+        )
+    )
+
+    switcher_to_this = level.add_script(
+        ScriptSwitcherInfoParams(
+            enabled=True,
+            scripts_toggle_on_ids=[level_to_this]
+        )
+    )
+
+    level.add_script(
+        ZoneSwitchInfoParams(
+            zone_pos= (2200, 220),
+            zone_size= (100,100),
+            target_obj_id= player_id,
+            switcher_id=switcher_to_this
+        )
+    )
+
+    #scripts #todo
+    level.add_script(LogInfoParams(player_id))
 
     #tmp
     mouse_script_id = level.add_script(MousePositionInfoParams())
     level.add_binds('mouse_press', pygame.BUTTON_LEFT, mouse_script_id)
+    mouse_tp_script_id = level.add_script(
+        MouseTeleportInfoParams(
+            target_id= player_id
+        )
+    )
+    level.add_binds('mouse_press', pygame.BUTTON_RIGHT, mouse_tp_script_id)
 
+    level.save_to_file(level_path)
     return level
-
 
 def test2()-> None:
     screen_size = (1920,1080)
-    max_fps = 0 #60
+    max_fps = 60
 
     pygame.init()
     screen = pygame.display.set_mode(size=screen_size, vsync=max_fps, flags = pygame.FULLSCREEN | pygame.SCALED)
@@ -655,16 +574,277 @@ def test2()-> None:
 
     level_path = "saves/level1/level1.json"
 
-    level = create_level_1()
-    level.save_to_file(level_path)
+    create_level_1()
     level = Level()
     level.load_from_file(level_path)
 
     game = Game(screen,screen_size,clock,max_fps)
 
-    game.load_level(level)
+    game.load_level(level, 1)
 
     game.game_loop()
 
+
+def base_init():
+    screen_size = (1920,1080)
+    max_fps = 0
+
+    pygame.init()
+    screen = pygame.display.set_mode(size=screen_size, vsync=max_fps, flags=pygame.FULLSCREEN | pygame.SCALED)
+
+    pygame.display.set_caption("The fog")
+    icon = pygame.image.load("assets/icon.png")
+    pygame.display.set_icon(icon)
+
+    clock = pygame.time.Clock()
+
+
+    return screen_size, max_fps, screen, clock, 1
+
+
+def main():
+    screen_size, max_fps, screen, clock, num = base_init()
+
+    full_exit = False
+
+    level = Level()
+
+    while not full_exit:
+        level.load_from_file(filename = f"saves/level{num}/level{num}.json")
+
+        game = Game(screen = screen, screen_size = level.screen_size, max_fps = max_fps, clock = clock)
+
+        game.load_level(level = level, num = num)
+
+        game.game_loop()
+
+        full_exit = game.full_exit
+
+        num = game.change_level[1]
+
+
+
+
 if __name__ == "__main__":
-    test2()
+    #test2()
+    create_level_1()
+    main()
+
+
+
+
+
+
+
+
+
+
+
+#def create_test_level():
+#     level = Level()
+#     level.size = (5000,1080)
+#
+#     player_sprite_id = level.add_sprite(
+#         path ='assets/test_level/character/char0.png'
+#     )
+#
+#     #player
+#     player_id = level.set_player(
+#         params=PlayerObjectInfoParams(
+#             pos = (0,0),
+#             sprite_id = player_sprite_id,
+#
+#             max_speed_x = 10*16,
+#             max_speed_y = 20*16,
+#             ground_friction_x = 3,
+#             air_friction_x = 0.05,
+#             air_friction_y = 0,
+#             gravitate = True,
+#             velocity_x = 0,
+#             velocity_y = 0,
+#
+#             lives = 5
+#         ),
+#         physics = True,
+#         physics_type = 'Stoppable',
+#         layer = 1,
+#         force_active = True
+#     )
+#
+#     mario_sprite_id = level.add_sprite("assets/character/mario.png")
+#     #mario1
+#     mario_id = level.add_object(
+#         params= MovingObjectInfoParams(
+#             pos = (30, 1080-70-70-70-70-35),
+#             sprite_id = mario_sprite_id,
+#             max_speed_x= 5*16,
+#             max_speed_y=20*16,
+#             gravitate= True,
+#             velocity_x=0,
+#             velocity_y=0,
+#             ground_friction_x = 3,
+#             air_friction_x = 0.05,
+#             air_friction_y = 0
+#         ),
+#         physics = True,
+#         physics_type = 'Stoppable',
+#         layer=1,
+#         force_active=False,
+#         class_type= 'Moving'
+#     )
+#
+#     #mario2
+#     mario2_id = level.add_object(
+#         params=MovingObjectInfoParams(
+#             pos=(1500, 1080 - 70 - 70 - 70),
+#             sprite_id=mario_sprite_id,
+#             max_speed_x=10 * 16,
+#             max_speed_y=20 * 16,
+#             gravitate=True,
+#             velocity_x=0,
+#             velocity_y=0,
+#             ground_friction_x=3,
+#             air_friction_x=0.05,
+#             air_friction_y=0
+#         ),
+#         physics=True,
+#         physics_type='Stoppable',
+#         layer=1,
+#         force_active=False,
+#         class_type='Moving'
+#     )
+#
+#     background_sprite_id = level.add_sprite("assets/background/background.png",)
+#
+#     #background
+#     level.add_object(
+#         class_type="Static",
+#         physics=False,
+#         layer=0,
+#         need_hitbox= False,
+#         params=StaticObjectInfoParams(
+#             pos=(0, 0),
+#             sprite_id=background_sprite_id
+#         )
+#
+#     )
+#
+#     brick_sprite_id = level.add_sprite("assets/test/brick.png")
+#
+#     #ground
+#     for i in range(73):
+#         level.add_object(
+#             class_type = "Static",
+#             physics = True,
+#             physics_type = "Static",
+#             layer = 1,
+#             params = StaticObjectInfoParams(
+#                 pos = (i * 70, 1080-35),
+#                 sprite_id = brick_sprite_id
+#             )
+#         )
+#
+#     #platform
+#     for i in range(100, 5000, 70):
+#         for j in range(0, 1080 - 35 * 3, 35):
+#             if random.randint(0, 100) % 100 == 0:
+#                 level.add_object(
+#                     class_type="Static",
+#                     physics=True,
+#                     physics_type="Static",
+#                     layer=1,
+#                     params=StaticObjectInfoParams(
+#                         pos=(i,j),
+#                         sprite_id = brick_sprite_id
+#                     )
+#                 )
+#
+#     #the_flying_brick
+#     level.add_object(
+#         class_type = "Moving",
+#         physics = True,
+#         physics_type = "Unstoppable",
+#         layer=1,
+#         params= MovingObjectInfoParams
+#         (
+#             pos = (-200, 1080-70-70-70-70-35),
+#             sprite_id= brick_sprite_id,
+#
+#             max_speed_x = 5*16,
+#             max_speed_y = 5*16,
+#             gravitate = False,
+#             velocity_x = 25,
+#             velocity_y = -5,
+#             ground_friction_x=0,
+#             air_friction_x=0,
+#             air_friction_y=0
+#         )
+#     )
+#
+#     #cam_boxes
+#     level.add_cam_box(
+#         hitbox= HitboxParams(
+#             pos = (0,0),
+#             size = (5000-1920,0)
+#         )
+#     )
+#
+#     flag_sprite_id = level.add_sprite('assets/test/flagbox.png')
+#
+#     #flag
+#     flag_id = level.add_object(
+#         class_type = "Static",
+#         physics = False,
+#         force_active = False,
+#         layer = None,
+#         need_hitbox= True,
+#         params= StaticObjectInfoParams(
+#             pos = (70,1080-500),
+#             sprite_id = flag_sprite_id
+#         )
+#     )
+#
+#     jump_sound_path = 'assets/test_level/sound/jump.mp3'
+#     zombie_path = "assets/test_level/sound/zombie.mp3"
+#
+#     anim_name = 'rotate'
+#
+#     anim_sprite_id1 = level.add_sprite("assets/character/char0.png", size=(100,100))
+#     anim_sprite_id2 = level.add_sprite("assets/character/char1.png", size=(100,100))
+#
+#     level.add_animation(
+#         object_id=player_id,
+#         name=anim_name,
+#         delay=2,
+#         frames_ids=[anim_sprite_id1, anim_sprite_id2],
+#         change_hitboxes= True
+#     )
+#
+#     level.add_sound('sound', jump_sound_path,0.1)
+#     level.add_sound('sound', zombie_path, 0.3)
+#
+#     level.add_script(LogInfoParams(player_id))
+#     level.add_script(MarioChaseInfoParams(mario_id,player_id))
+#     level.add_script(PatrolInfoParams(mario2_id, [(1500,970),[2000,970]]))
+#
+#     zombie_sound_id = level.add_script(PlaySoundInfoParams(zombie_path))
+#     anim_change_id = level.add_script(ChangeAnimInfoParams(target_id= player_id, animation_name = anim_name))
+#
+#
+#     switcher_id = level.add_script(ScriptSwitcherInfoParams(scripts_switch_ids=[anim_change_id], scripts_toggle_on_ids=[zombie_sound_id], enabled= True))
+#     level.add_script(FlagSwitchInfoParams(flag_obj_id= flag_id, target_obj_id= player_id,switcher_id = switcher_id, enabled = True))
+#
+#
+#
+#     m_l_id = level.add_script(MoveLeftInfoParams(player_id, 500, 50, 10 * 16))
+#     m_r_id = level.add_script(MoveRightInfoParams(player_id, 500, 50, 10 * 16))
+#     #j_id = level.add_script(JumpInfoParams(player_id,20*16))
+#
+#     level.add_binds('press', pygame.K_a, m_l_id)
+#     level.add_binds('release', pygame.K_a, m_l_id)
+#     level.add_binds('press', pygame.K_d, m_r_id)
+#     level.add_binds('release', pygame.K_d, m_r_id)
+#     #level.add_binds('hold', pygame.K_w, j_id)
+#     #level.add_binds('hold', pygame.K_SPACE, j_id)
+#     #level.add_binds('mouse_hold', pygame.BUTTON_LEFT, j_id)
+#     return level
