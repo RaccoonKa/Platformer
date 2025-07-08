@@ -34,6 +34,8 @@ def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
             return AppearedObject(params)
         case 'PlatformAppearSystem':
             return PlatformAppearSystem(params)
+        case 'ZoneSwitch':
+            return ZoneSwitchScript(params)
         case _:
             return Script(params)
 
@@ -405,7 +407,11 @@ class JumpScript(CommandScript):
 
 
     def on_execute(self, dt : float, press : bool = False,hold : bool = False, release : bool = False) -> None:
-        if hold:
+        if press:
+            self.start()
+        elif release:
+            self.start()
+        elif hold:
             self.start()
 
     def update(self, dt: float) -> None:
@@ -420,11 +426,12 @@ class JumpScript(CommandScript):
 
 
 class ScriptSwitcherInfoParams(ScriptInfoParams):
-    def __init__(self, scripts_switch_ids : list[int] = None,
+    def __init__(self,max_switches : int = -1, scripts_switch_ids : list[int] = None,
                  scripts_toggle_on_ids : list[int] = None, scripts_toggle_off_ids : list[int] = None, enabled : bool = True):
         super().__init__()
         self.type = 'ScriptSwitcher'
         self.enabled = enabled
+
 
         if scripts_switch_ids:
             self.scripts += scripts_switch_ids
@@ -436,7 +443,8 @@ class ScriptSwitcherInfoParams(ScriptInfoParams):
         self.other = {
             "switch" : len(scripts_switch_ids) if scripts_switch_ids else 0,
             "toggle_on" : len(scripts_toggle_on_ids) if scripts_toggle_on_ids else 0,
-            "toggle_off" : len(scripts_toggle_off_ids) if scripts_toggle_off_ids else 0
+            "toggle_off" : len(scripts_toggle_off_ids) if scripts_toggle_off_ids else 0,
+            "switches" : max_switches
         }
 
 class ScriptSwitcher(Script):
@@ -449,8 +457,12 @@ class ScriptSwitcher(Script):
         self.scripts_switch : list[Script] = all_scripts[0:other['switch']]
         self.scripts_toggle_on : list[Script] = all_scripts[other['switch']:other['switch']+other['toggle_on']]
         self.scripts_toggle_off : list[Script] = all_scripts[other['switch']+other['toggle_on'] : other['switch']+other['toggle_on'] + other['toggle_off']]
+        self.max_switches = other['switches']
 
         self.need_switch = False
+
+        self.switches = 0
+
 
     def destroy(self) -> None:
         self.kill = True
@@ -476,6 +488,9 @@ class ScriptSwitcher(Script):
             script.start()
         for script in self.scripts_toggle_off:
             script.stop()
+        self.switches += 1
+        if self.switches == self.max_switches and self.max_switches != -1:
+            self.destroy()
 
 
 class FlagSwitchInfoParams(ScriptInfoParams):
@@ -650,7 +665,6 @@ class MovementSystemScript(Script):
         self.enabled = False
 
     def update(self, dt: float) -> None:
-        print(self.target.is_grounded)
         is_falling = not self.target.is_grounded and self.target.velocity_y > 0
 
         if not self.was_falling and is_falling and self.fall_sound:
@@ -887,6 +901,55 @@ class PlatformAppearSystem(Script):
                 )
             )
         return flags
+
+
+class ZoneSwitchInfoParams(ScriptInfoParams):
+    def __init__(self, zone_pos : tuple[float,float], zone_size : tuple[int,int], target_obj_id : int, switcher_id : int, enabled : bool = True):
+        super().__init__()
+        self.enabled = enabled
+        self.type = "ZoneSwitch"
+
+        self.objects = [target_obj_id]
+        self.scripts = [switcher_id]
+
+        self.other['zone_pos'] = zone_pos
+        self.other['zone_size'] = zone_size
+
+class ZoneSwitchScript(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.target_obj = params['objects'][0]
+
+        self.switcher = params['scripts'][0]
+
+        other = params['other']
+        self.hitbox = Hitbox(pos = other['zone_pos'], size=other['zone_size'])
+
+        self.target_in_zone = False
+
+    def destroy(self) -> None:
+        self.kill = True
+        print('ded')
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        if self.switcher.kill:
+            self.destroy()
+
+        collide = self.hitbox.is_collide(self.target_obj.hitbox)
+
+        if collide and not self.target_in_zone:
+            self.target_in_zone = True
+            self.switcher.need_switch = True
+        if not collide and self.target_in_zone:
+            self.target_in_zone = False
+
 
 #
 # layer_system
