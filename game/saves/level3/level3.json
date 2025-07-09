@@ -1,0 +1,163 @@
+{
+    "size": [
+        1920,
+        1080
+    ],
+    "screen_size": [
+        1920,
+        1080
+    ],
+    "g": 320,
+    "sprites": [
+        {
+            "id": 0,
+            "sprite_path": "assets/characters/ANDY/andy.png",
+            "sprite_size": [
+                47,
+                94
+            ],
+            "hitbox_id": 0
+        },
+        {
+            "id": 1,
+            "sprite_path": "assets/pictures/game/background_game/bg_soon.png",
+            "sprite_size": [
+                1920,
+                1080
+            ],
+            "hitbox_id": 1
+        }
+    ],
+    "hitboxes": [
+        {
+            "id": 0,
+            "hitbox": {
+                "pos": null,
+                "size": [
+                    47,
+                    94
+                ],
+                "offset": [
+                    0,
+                    0
+                ]
+            }
+        },
+        {
+            "id": 1,
+            "hitbox": {
+                "pos": null,
+                "size": [
+                    0,
+                    0
+                ],
+                "offset": [
+                    0,
+                    0
+                ]
+            }
+        }
+    ],
+    "objects": [
+        {
+            "id": 0,
+            "class_type": "Player",
+            "physics": false,
+            "params": {
+                "pos": [
+                    500,
+                    500
+                ],
+                "sprite_id": 0,
+                "max_speed_x": 0,
+                "max_speed_y": 0,
+                "ground_friction_x": 0,
+                "air_friction_x": 0,
+                "air_friction_y": 0,
+                "gravitate": false,
+                "velocity_x": 0,
+                "velocity_y": 0,
+                "lives": 0
+            },
+            "layer": null,
+            "physic_type": "Stoppable",
+            "force_active": true,
+            "need_hitbox": false
+        },
+        {
+            "id": 1,
+            "class_type": "Static",
+            "physics": false,
+            "params": {
+                "pos": [
+                    0,
+                    0
+                ],
+                "sprite_id": 1
+            },
+            "layer": 0,
+            "physic_type": null,
+            "force_active": true,
+            "need_hitbox": false
+        }
+    ],
+    "animations": [],
+    "sounds": [],
+    "scripts": [
+        {
+            "id": 0,
+            "info_params": {
+                "__class__": "MusicPlayerInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "MusicPlayer",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": true,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "playlist": [
+                            [
+                                "assets/audio/game/game_music/1.mp3",
+                                0.2
+                            ],
+                            [
+                                "assets/audio/game/game_music/0.mp3",
+                                0.2
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "binds": [],
+    "cam_boxes": [
+        {
+            "id": 0,
+            "hitbox": {
+                "pos": [
+                    0,
+                    0
+                ],
+                "size": [
+                    0,
+                    0
+                ]
+            }
+        }
+    ]
+}

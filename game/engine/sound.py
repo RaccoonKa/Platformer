@@ -6,11 +6,14 @@ from typing import Dict, Optional
 class SoundEngine:
     def __init__(self, max_channels: int = 32):
         pygame.mixer.init()
+        self.stop_all()
         pygame.mixer.set_num_channels(max_channels)
         self.sounds: Dict[str, pygame.mixer.Sound] = {}
         self.music_volume: float = 1.0
         self.sound_volume: float = 1.0
         self.current_music: Optional[str] = None
+        self.now_music_volume : float = 1
+        self.now_sound_volume : float = 1
 
     def load_sound(self, name: str, file_path: str, sound_volume : float = None) -> None:
         if not os.path.exists(file_path):
@@ -73,6 +76,10 @@ class SoundEngine:
 
     def is_music_playing(self) -> bool:
         return pygame.mixer.music.get_busy()
+
+    def stop_all(self):
+        pygame.mixer.stop()
+        pygame.mixer.music.stop()
 
     def update(self) -> None:
         pass

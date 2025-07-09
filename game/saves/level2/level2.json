@@ -1172,16 +1172,16 @@
         },
         {
             "id": 129,
-            "sprite_path": "assets/pictures/game/background_game/bg0.png",
+            "sprite_path": "assets/pictures/game/things/error.png",
             "sprite_size": [
-                2000,
-                1200
+                30,
+                30
             ],
             "hitbox_id": 7
         },
         {
             "id": 130,
-            "sprite_path": "assets/pictures/game/rain/0.png",
+            "sprite_path": "assets/pictures/game/background_game/bg3.png",
             "sprite_size": [
                 2000,
                 1200
@@ -1195,115 +1195,259 @@
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
             "id": 132,
+            "sprite_path": "assets/pictures/game/rain/0.png",
+            "sprite_size": [
+                2000,
+                1200
+            ],
+            "hitbox_id": 9
+        },
+        {
+            "id": 133,
             "sprite_path": "assets/pictures/game/rain/1.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 133,
+            "id": 134,
             "sprite_path": "assets/pictures/game/rain/2.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 134,
+            "id": 135,
             "sprite_path": "assets/pictures/game/rain/3.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 135,
+            "id": 136,
             "sprite_path": "assets/pictures/game/rain/4.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 136,
+            "id": 137,
             "sprite_path": "assets/pictures/game/rain/5.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 137,
+            "id": 138,
             "sprite_path": "assets/pictures/game/rain/6.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 138,
+            "id": 139,
             "sprite_path": "assets/pictures/game/rain/7.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 139,
+            "id": 140,
             "sprite_path": "assets/pictures/game/rain/8.png",
             "sprite_size": [
                 2000,
                 1200
             ],
-            "hitbox_id": 8
+            "hitbox_id": 9
         },
         {
-            "id": 140,
+            "id": 141,
             "sprite_path": "assets/pictures/game/things/platform0.png",
             "sprite_size": [
                 254,
                 60
             ],
-            "hitbox_id": 9
+            "hitbox_id": 10
         },
         {
-            "id": 141,
+            "id": 142,
             "sprite_path": "assets/pictures/game/things/platform1.png",
             "sprite_size": [
                 107,
                 66
             ],
-            "hitbox_id": 10
+            "hitbox_id": 11
         },
         {
-            "id": 142,
+            "id": 143,
             "sprite_path": "assets/pictures/game/things/platform2.png",
             "sprite_size": [
                 147,
                 27
             ],
-            "hitbox_id": 11
+            "hitbox_id": 12
         },
         {
-            "id": 143,
+            "id": 144,
             "sprite_path": "assets/pictures/game/things/platform3.png",
             "sprite_size": [
                 76,
                 45
             ],
-            "hitbox_id": 12
+            "hitbox_id": 13
+        },
+        {
+            "id": 145,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/office_zombie.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 146,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/0.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 147,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/1.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 148,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/2.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 149,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/3.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 150,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/4.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 151,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/5.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 152,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_left/6.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 153,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/0.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 154,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/1.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 155,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/2.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 156,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/3.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 157,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/4.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 158,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/5.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
+        },
+        {
+            "id": 159,
+            "sprite_path": "assets/characters/NPC/passive/office-zombie/walk_zombie_right/6.png",
+            "sprite_size": [
+                100,
+                120
+            ],
+            "hitbox_id": 14
         }
     ],
     "hitboxes": [
@@ -1382,11 +1526,11 @@
             "hitbox": {
                 "pos": null,
                 "size": [
-                    2000,
+                    2300,
                     50
                 ],
                 "offset": [
-                    0,
+                    -150,
                     0
                 ]
             }
@@ -1397,7 +1541,7 @@
                 "pos": null,
                 "size": [
                     50,
-                    1200
+                    950
                 ],
                 "offset": [
                     0,
@@ -1410,6 +1554,20 @@
             "hitbox": {
                 "pos": null,
                 "size": [
+                    50,
+                    565
+                ],
+                "offset": [
+                    0,
+                    0
+                ]
+            }
+        },
+        {
+            "id": 8,
+            "hitbox": {
+                "pos": null,
+                "size": [
                     0,
                     0
                 ],
@@ -1420,7 +1578,7 @@
             }
         },
         {
-            "id": 8,
+            "id": 9,
             "hitbox": {
                 "pos": null,
                 "size": [
@@ -1434,7 +1592,7 @@
             }
         },
         {
-            "id": 9,
+            "id": 10,
             "hitbox": {
                 "pos": null,
                 "size": [
@@ -1448,7 +1606,7 @@
             }
         },
         {
-            "id": 10,
+            "id": 11,
             "hitbox": {
                 "pos": null,
                 "size": [
@@ -1462,7 +1620,7 @@
             }
         },
         {
-            "id": 11,
+            "id": 12,
             "hitbox": {
                 "pos": null,
                 "size": [
@@ -1471,17 +1629,31 @@
                 ],
                 "offset": [
                     0,
-                    0
+                    1
                 ]
             }
         },
         {
-            "id": 12,
+            "id": 13,
             "hitbox": {
                 "pos": null,
                 "size": [
                     76,
                     45
+                ],
+                "offset": [
+                    0,
+                    0
+                ]
+            }
+        },
+        {
+            "id": 14,
+            "hitbox": {
+                "pos": null,
+                "size": [
+                    100,
+                    120
                 ],
                 "offset": [
                     0,
@@ -1497,8 +1669,8 @@
             "physics": true,
             "params": {
                 "pos": [
-                    10,
-                    1012
+                    -50,
+                    226
                 ],
                 "sprite_id": 0,
                 "max_speed_x": 1000,
@@ -1523,7 +1695,7 @@
             "params": {
                 "pos": [
                     0,
-                    1175
+                    1136
                 ],
                 "sprite_id": 127
             },
@@ -1555,7 +1727,7 @@
             "params": {
                 "pos": [
                     -50,
-                    0
+                    385
                 ],
                 "sprite_id": 128
             },
@@ -1571,9 +1743,9 @@
             "params": {
                 "pos": [
                     2000,
-                    320
+                    385
                 ],
-                "sprite_id": 128
+                "sprite_id": 129
             },
             "layer": null,
             "physic_type": "Static",
@@ -1589,7 +1761,7 @@
                     0,
                     0
                 ],
-                "sprite_id": 129
+                "sprite_id": 130
             },
             "layer": 0,
             "physic_type": null,
@@ -1605,7 +1777,7 @@
                     0,
                     0
                 ],
-                "sprite_id": 130
+                "sprite_id": 131
             },
             "layer": 3,
             "physic_type": null,
@@ -1614,188 +1786,36 @@
         },
         {
             "id": 7,
-            "class_type": "Static",
+            "class_type": "Moving",
             "physics": true,
             "params": {
                 "pos": [
-                    1800,
-                    1100
+                    -100,
+                    370
                 ],
-                "sprite_id": 140
+                "sprite_id": 143,
+                "max_speed_x": 50,
+                "max_speed_y": 0,
+                "velocity_x": 0,
+                "velocity_y": 0,
+                "ground_friction_x": 0,
+                "air_friction_x": 0,
+                "air_friction_y": 0,
+                "gravitate": false
             },
             "layer": 1,
-            "physic_type": "Static",
+            "physic_type": "Unstoppable",
             "force_active": false,
             "need_hitbox": true
         },
         {
             "id": 8,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    1450,
-                    1000
-                ],
-                "sprite_id": 140
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 9,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    1100,
-                    900
-                ],
-                "sprite_id": 140
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 10,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    750,
-                    800
-                ],
-                "sprite_id": 140
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 11,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    400,
-                    700
-                ],
-                "sprite_id": 140
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 12,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    50,
-                    600
-                ],
-                "sprite_id": 140
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 13,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    420,
-                    500
-                ],
-                "sprite_id": 140
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 14,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    770,
-                    500
-                ],
-                "sprite_id": 141
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 15,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    1070,
-                    450
-                ],
-                "sprite_id": 141
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 16,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    1370,
-                    400
-                ],
-                "sprite_id": 141
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 17,
-            "class_type": "Static",
-            "physics": true,
-            "params": {
-                "pos": [
-                    1670,
-                    350
-                ],
-                "sprite_id": 141
-            },
-            "layer": 1,
-            "physic_type": "Static",
-            "force_active": false,
-            "need_hitbox": true
-        },
-        {
-            "id": 18,
             "class_type": "Moving",
             "physics": true,
             "params": {
                 "pos": [
-                    1810,
-                    310
+                    500,
+                    370
                 ],
                 "sprite_id": 142,
                 "max_speed_x": 50,
@@ -1809,6 +1829,150 @@
             },
             "layer": 1,
             "physic_type": "Unstoppable",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 9,
+            "class_type": "Moving",
+            "physics": true,
+            "params": {
+                "pos": [
+                    600,
+                    375
+                ],
+                "sprite_id": 142,
+                "max_speed_x": 50,
+                "max_speed_y": 0,
+                "velocity_x": 0,
+                "velocity_y": 0,
+                "ground_friction_x": 0,
+                "air_friction_x": 0,
+                "air_friction_y": 0,
+                "gravitate": false
+            },
+            "layer": 1,
+            "physic_type": "Unstoppable",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 10,
+            "class_type": "Moving",
+            "physics": true,
+            "params": {
+                "pos": [
+                    1050,
+                    600
+                ],
+                "sprite_id": 144,
+                "max_speed_x": 0,
+                "max_speed_y": 50,
+                "velocity_x": 0,
+                "velocity_y": 0,
+                "ground_friction_x": 0,
+                "air_friction_x": 0,
+                "air_friction_y": 0,
+                "gravitate": false
+            },
+            "layer": 1,
+            "physic_type": "Unstoppable",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 11,
+            "class_type": "Moving",
+            "physics": true,
+            "params": {
+                "pos": [
+                    920,
+                    830
+                ],
+                "sprite_id": 141,
+                "max_speed_x": 0,
+                "max_speed_y": 50,
+                "velocity_x": 0,
+                "velocity_y": 0,
+                "ground_friction_x": 0,
+                "air_friction_x": 0,
+                "air_friction_y": 0,
+                "gravitate": false
+            },
+            "layer": 1,
+            "physic_type": "Unstoppable",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 12,
+            "class_type": "Moving",
+            "physics": true,
+            "params": {
+                "pos": [
+                    1800,
+                    830
+                ],
+                "sprite_id": 143,
+                "max_speed_x": 100,
+                "max_speed_y": 100,
+                "velocity_x": 0,
+                "velocity_y": 0,
+                "ground_friction_x": 0,
+                "air_friction_x": 0,
+                "air_friction_y": 0,
+                "gravitate": false
+            },
+            "layer": 1,
+            "physic_type": "Unstoppable",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 13,
+            "class_type": "Moving",
+            "physics": true,
+            "params": {
+                "pos": [
+                    940,
+                    1000
+                ],
+                "sprite_id": 145,
+                "max_speed_x": 50,
+                "max_speed_y": 400,
+                "ground_friction_x": 6,
+                "air_friction_y": 0.05,
+                "air_friction_x": 0,
+                "velocity_y": 0,
+                "velocity_x": 0,
+                "gravitate": true
+            },
+            "layer": 2,
+            "physic_type": "Stoppable",
+            "force_active": false,
+            "need_hitbox": true
+        },
+        {
+            "id": 14,
+            "class_type": "Moving",
+            "physics": true,
+            "params": {
+                "pos": [
+                    1600,
+                    1000
+                ],
+                "sprite_id": 145,
+                "max_speed_x": 50,
+                "max_speed_y": 400,
+                "ground_friction_x": 6,
+                "air_friction_y": 0.05,
+                "air_friction_x": 0,
+                "velocity_y": 0,
+                "velocity_x": 0,
+                "gravitate": true
+            },
+            "layer": 2,
+            "physic_type": "Stoppable",
             "force_active": false,
             "need_hitbox": true
         }
@@ -2025,7 +2189,6 @@
             "name": "rain",
             "delay": 0.1111111111111111,
             "frames": [
-                131,
                 132,
                 133,
                 134,
@@ -2033,7 +2196,38 @@
                 136,
                 137,
                 138,
-                139
+                139,
+                140
+            ],
+            "change_hitboxes": false
+        },
+        {
+            "object_id": 13,
+            "name": "left",
+            "delay": 0.21428571428571427,
+            "frames": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+            ],
+            "change_hitboxes": false
+        },
+        {
+            "object_id": 14,
+            "name": "right",
+            "delay": 0.21428571428571427,
+            "frames": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
             ],
             "change_hitboxes": false
         }
@@ -2096,7 +2290,19 @@
         {
             "id": 9,
             "type": "sound",
+            "filename": "assets/audio/game/sounds/platforms/platform_window_error.mp3",
+            "volume": 0.2
+        },
+        {
+            "id": 10,
+            "type": "sound",
             "filename": "assets/audio/game/sounds/rain/rain.mp3",
+            "volume": 0.2
+        },
+        {
+            "id": 11,
+            "type": "sound",
+            "filename": "assets/audio/game/sounds/other/door.wav",
             "volume": 0.2
         }
     ],
@@ -2126,7 +2332,7 @@
                     "camera": false,
                     "clock": false,
                     "other": {
-                        "num": 2
+                        "num": 3
                     }
                 }
             }
@@ -2156,7 +2362,7 @@
                     "camera": false,
                     "clock": false,
                     "other": {
-                        "num": 1
+                        "num": 2
                     }
                 }
             }
@@ -2238,7 +2444,7 @@
                 "module": "game.subsystems.scripts",
                 "data": {
                     "type": "MusicPlayer",
-                    "enabled": false,
+                    "enabled": true,
                     "systems": {
                         "layer_system": false,
                         "camera_manager": false,
@@ -2473,16 +2679,90 @@
                     "camera": false,
                     "clock": false,
                     "other": {
-                        "switch": 0,
+                        "switch": 3,
                         "toggle_on": 0,
-                        "toggle_off": 3,
-                        "switches": 1
+                        "toggle_off": 0,
+                        "switches": 2
                     }
                 }
             }
         },
         {
             "id": 11,
+            "info_params": {
+                "__class__": "MovementSwitcherInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "MovementSwitcher",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [
+                        7,
+                        6,
+                        8
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "switch": 3,
+                        "toggle_on": 0,
+                        "toggle_off": 0,
+                        "switches": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 12,
+            "info_params": {
+                "__class__": "MovementSwitcherInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "MovementSwitcher",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [
+                        7,
+                        6,
+                        8
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "switch": 3,
+                        "toggle_on": 0,
+                        "toggle_off": 0,
+                        "switches": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 13,
             "info_params": {
                 "__class__": "LivesControlInfoParams",
                 "module": "game.subsystems.scripts",
@@ -2506,7 +2786,7 @@
                     ],
                     "scripts": [
                         3,
-                        10,
+                        11,
                         9
                     ],
                     "camera": false,
@@ -2520,7 +2800,7 @@
             }
         },
         {
-            "id": 12,
+            "id": 14,
             "info_params": {
                 "__class__": "ChangeAnimInfoParams",
                 "module": "game.subsystems.scripts",
@@ -2553,197 +2833,13 @@
             }
         },
         {
-            "id": 13,
-            "info_params": {
-                "__class__": "PlatformAppearSystemInfoParams",
-                "module": "game.subsystems.scripts",
-                "data": {
-                    "type": "PlatformAppearSystem",
-                    "enabled": false,
-                    "systems": {
-                        "layer_system": false,
-                        "camera_manager": false,
-                        "activity_manager": false,
-                        "physic_engine": false,
-                        "animation_engine": true,
-                        "sound_engine": true,
-                        "input_manager": false,
-                        "script_system": false,
-                        "ui": false,
-                        "game": false
-                    },
-                    "objects": [
-                        0,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17,
-                        18
-                    ],
-                    "scripts": [],
-                    "camera": false,
-                    "clock": false,
-                    "other": {
-                        "flag_size": [
-                            100,
-                            10
-                        ],
-                        "appear_sounds": [
-                            [
-                                "assets/audio/game/sounds/platforms/platform_server.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_server.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_server.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_server.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_server.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_server.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_printer.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_printer.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_printer.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_printer.mp3",
-                                -1
-                            ],
-                            [
-                                "assets/audio/game/sounds/platforms/platform_bug_texture.mp3",
-                                -1
-                            ]
-                        ],
-                        "appear_anims": [
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "id": 14,
-            "info_params": {
-                "__class__": "ScriptSwitcherInfoParams",
-                "module": "game.subsystems.scripts",
-                "data": {
-                    "type": "ScriptSwitcher",
-                    "enabled": true,
-                    "systems": {
-                        "layer_system": false,
-                        "camera_manager": false,
-                        "activity_manager": false,
-                        "physic_engine": false,
-                        "animation_engine": false,
-                        "sound_engine": false,
-                        "input_manager": false,
-                        "script_system": false,
-                        "ui": false,
-                        "game": false
-                    },
-                    "objects": [],
-                    "scripts": [
-                        13,
-                        4
-                    ],
-                    "camera": false,
-                    "clock": false,
-                    "other": {
-                        "switch": 0,
-                        "toggle_on": 2,
-                        "toggle_off": 0,
-                        "switches": 1
-                    }
-                }
-            }
-        },
-        {
             "id": 15,
-            "info_params": {
-                "__class__": "ZoneSwitchInfoParams",
-                "module": "game.subsystems.scripts",
-                "data": {
-                    "type": "ZoneSwitch",
-                    "enabled": true,
-                    "systems": {
-                        "layer_system": false,
-                        "camera_manager": false,
-                        "activity_manager": false,
-                        "physic_engine": false,
-                        "animation_engine": false,
-                        "sound_engine": false,
-                        "input_manager": false,
-                        "script_system": false,
-                        "ui": false,
-                        "game": false
-                    },
-                    "objects": [
-                        0
-                    ],
-                    "scripts": [
-                        14
-                    ],
-                    "camera": false,
-                    "clock": false,
-                    "other": {
-                        "zone_pos": [
-                            1450,
-                            970
-                        ],
-                        "zone_size": [
-                            50,
-                            200
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "id": 16,
             "info_params": {
                 "__class__": "PatrolInfoParams",
                 "module": "game.subsystems.scripts",
                 "data": {
                     "type": "Patrol",
-                    "enabled": false,
+                    "enabled": true,
                     "systems": {
                         "layer_system": false,
                         "camera_manager": false,
@@ -2757,7 +2853,7 @@
                         "game": false
                     },
                     "objects": [
-                        18
+                        7
                     ],
                     "scripts": [],
                     "camera": false,
@@ -2765,19 +2861,54 @@
                     "other": {
                         "points": [
                             [
-                                2500,
-                                310
+                                -200,
+                                370
                             ],
                             [
-                                1810,
-                                310
+                                30,
+                                370
                             ]
                         ],
                         "speed_x": 100,
                         "speed_y": -1,
-                        "cyclic": true,
+                        "cyclic": false,
                         "teleport": false,
                         "reach_distance": 5
+                    }
+                }
+            }
+        },
+        {
+            "id": 16,
+            "info_params": {
+                "__class__": "TeleportObjectInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "TeleportObject",
+                    "enabled": false,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        3
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "pos": [
+                            -50,
+                            0
+                        ]
                     }
                 }
             }
@@ -2812,7 +2943,7 @@
                         "switch": 0,
                         "toggle_on": 1,
                         "toggle_off": 0,
-                        "switches": 1
+                        "switches": -1
                     }
                 }
             }
@@ -2841,18 +2972,18 @@
                         0
                     ],
                     "scripts": [
-                        10
+                        17
                     ],
                     "camera": false,
                     "clock": false,
                     "other": {
                         "zone_pos": [
-                            1810,
-                            300
+                            89,
+                            350
                         ],
                         "zone_size": [
-                            80,
-                            10
+                            50,
+                            20
                         ]
                     }
                 }
@@ -2882,18 +3013,18 @@
                         0
                     ],
                     "scripts": [
-                        17
+                        10
                     ],
                     "camera": false,
                     "clock": false,
                     "other": {
                         "zone_pos": [
-                            1810,
-                            300
+                            -50,
+                            226
                         ],
                         "zone_size": [
-                            80,
-                            10
+                            1,
+                            1
                         ]
                     }
                 }
@@ -2923,6 +3054,512 @@
                         0
                     ],
                     "scripts": [
+                        10
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            89,
+                            350
+                        ],
+                        "zone_size": [
+                            50,
+                            20
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 21,
+            "info_params": {
+                "__class__": "PatrolInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "Patrol",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        8
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "points": [
+                            [
+                                500,
+                                370
+                            ],
+                            [
+                                200,
+                                370
+                            ]
+                        ],
+                        "speed_x": 50,
+                        "speed_y": -1,
+                        "cyclic": true,
+                        "teleport": false,
+                        "reach_distance": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 22,
+            "info_params": {
+                "__class__": "PatrolInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "Patrol",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        9
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "points": [
+                            [
+                                600,
+                                375
+                            ],
+                            [
+                                900,
+                                375
+                            ]
+                        ],
+                        "speed_x": 50,
+                        "speed_y": -1,
+                        "cyclic": true,
+                        "teleport": false,
+                        "reach_distance": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 23,
+            "info_params": {
+                "__class__": "PlatformAppearSystemInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "PlatformAppearSystem",
+                    "enabled": false,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": true,
+                        "sound_engine": true,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        0,
+                        10
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "flag_size": [
+                            -1,
+                            -1
+                        ],
+                        "appear_sounds": [
+                            [
+                                "assets/audio/game/sounds/platforms/platform_window_error.mp3",
+                                -1
+                            ]
+                        ],
+                        "appear_anims": [
+                            null
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 24,
+            "info_params": {
+                "__class__": "ScriptSwitcherInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ScriptSwitcher",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [
+                        23
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "switch": 0,
+                        "toggle_on": 1,
+                        "toggle_off": 0,
+                        "switches": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 25,
+            "info_params": {
+                "__class__": "ZoneSwitchInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ZoneSwitch",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        0
+                    ],
+                    "scripts": [
+                        24
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            900,
+                            375
+                        ],
+                        "zone_size": [
+                            100,
+                            50
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 26,
+            "info_params": {
+                "__class__": "PatrolInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "Patrol",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        11
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "points": [
+                            [
+                                920,
+                                830
+                            ],
+                            [
+                                1500,
+                                830
+                            ]
+                        ],
+                        "speed_x": 50,
+                        "speed_y": -1,
+                        "cyclic": true,
+                        "teleport": false,
+                        "reach_distance": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 27,
+            "info_params": {
+                "__class__": "DeadZoneInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "DeadZone",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        0
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            0,
+                            955
+                        ],
+                        "zone_size": [
+                            2000,
+                            180
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 28,
+            "info_params": {
+                "__class__": "PatrolInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "Patrol",
+                    "enabled": false,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        12
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "points": [
+                            [
+                                1800,
+                                830
+                            ],
+                            [
+                                1800,
+                                300
+                            ],
+                            [
+                                2500,
+                                300
+                            ]
+                        ],
+                        "speed_x": 100,
+                        "speed_y": 100,
+                        "cyclic": false,
+                        "teleport": false,
+                        "reach_distance": 5
+                    }
+                }
+            }
+        },
+        {
+            "id": 29,
+            "info_params": {
+                "__class__": "ScriptSwitcherInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ScriptSwitcher",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [
+                        28
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "switch": 0,
+                        "toggle_on": 1,
+                        "toggle_off": 0,
+                        "switches": 1
+                    }
+                }
+            }
+        },
+        {
+            "id": 30,
+            "info_params": {
+                "__class__": "ZoneSwitchInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ZoneSwitch",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        0
+                    ],
+                    "scripts": [
+                        29
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            1850,
+                            820
+                        ],
+                        "zone_size": [
+                            60,
+                            20
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 31,
+            "info_params": {
+                "__class__": "ZoneSwitchInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ZoneSwitch",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        0
+                    ],
+                    "scripts": [
+                        12
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            1850,
+                            820
+                        ],
+                        "zone_size": [
+                            60,
+                            20
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 32,
+            "info_params": {
+                "__class__": "ZoneSwitchInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ZoneSwitch",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        0
+                    ],
+                    "scripts": [
                         2
                     ],
                     "camera": false,
@@ -2930,7 +3567,7 @@
                     "other": {
                         "zone_pos": [
                             2200,
-                            220
+                            300
                         ],
                         "zone_size": [
                             100,
@@ -2941,7 +3578,335 @@
             }
         },
         {
-            "id": 21,
+            "id": 33,
+            "info_params": {
+                "__class__": "PlaySoundInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "PlaySound",
+                    "enabled": false,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": true,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "sound": "assets/audio/game/sounds/other/door.wav",
+                        "loops": 0,
+                        "volume": null
+                    }
+                }
+            }
+        },
+        {
+            "id": 34,
+            "info_params": {
+                "__class__": "NpcMoveLeftInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "NpcMoveLeftScript",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": true,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        13
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "ground_acceleration": 1000,
+                        "air_acceleration": 100,
+                        "max_speed": 20,
+                        "enabled": true,
+                        "anim": true
+                    }
+                }
+            }
+        },
+        {
+            "id": 35,
+            "info_params": {
+                "__class__": "TeleportObjectInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "TeleportObject",
+                    "enabled": false,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        13
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "pos": [
+                            940,
+                            1000
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 36,
+            "info_params": {
+                "__class__": "ScriptSwitcherInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ScriptSwitcher",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [
+                        35,
+                        33
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "switch": 0,
+                        "toggle_on": 2,
+                        "toggle_off": 0,
+                        "switches": -1
+                    }
+                }
+            }
+        },
+        {
+            "id": 37,
+            "info_params": {
+                "__class__": "ZoneSwitchInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ZoneSwitch",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        13
+                    ],
+                    "scripts": [
+                        36
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            -150,
+                            900
+                        ],
+                        "zone_size": [
+                            20,
+                            300
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 38,
+            "info_params": {
+                "__class__": "NpcMoveRightInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "NpcMoveRightScript",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": true,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        14
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "ground_acceleration": 1000,
+                        "air_acceleration": 100,
+                        "max_speed": 20,
+                        "enabled": true,
+                        "anim": true
+                    }
+                }
+            }
+        },
+        {
+            "id": 39,
+            "info_params": {
+                "__class__": "TeleportObjectInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "TeleportObject",
+                    "enabled": false,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        14
+                    ],
+                    "scripts": [],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "pos": [
+                            1040,
+                            1000
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 40,
+            "info_params": {
+                "__class__": "ScriptSwitcherInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ScriptSwitcher",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [],
+                    "scripts": [
+                        39,
+                        33
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "switch": 0,
+                        "toggle_on": 2,
+                        "toggle_off": 0,
+                        "switches": -1
+                    }
+                }
+            }
+        },
+        {
+            "id": 41,
+            "info_params": {
+                "__class__": "ZoneSwitchInfoParams",
+                "module": "game.subsystems.scripts",
+                "data": {
+                    "type": "ZoneSwitch",
+                    "enabled": true,
+                    "systems": {
+                        "layer_system": false,
+                        "camera_manager": false,
+                        "activity_manager": false,
+                        "physic_engine": false,
+                        "animation_engine": false,
+                        "sound_engine": false,
+                        "input_manager": false,
+                        "script_system": false,
+                        "ui": false,
+                        "game": false
+                    },
+                    "objects": [
+                        14
+                    ],
+                    "scripts": [
+                        40
+                    ],
+                    "camera": false,
+                    "clock": false,
+                    "other": {
+                        "zone_pos": [
+                            2150,
+                            900
+                        ],
+                        "zone_size": [
+                            20,
+                            300
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 42,
             "info_params": {
                 "__class__": "LogInfoParams",
                 "module": "game.subsystems.scripts",
@@ -3012,7 +3977,7 @@
             "id": 6,
             "type": "press",
             "key": 114,
-            "command_script_id": 11
+            "command_script_id": 13
         }
     ],
     "cam_boxes": [

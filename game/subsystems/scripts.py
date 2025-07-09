@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import pygame.mixer
+import pygame
+import random
 
 from game.engine.script_system import ScriptParams, ScriptInfoParams, Script, CommandScript
 from game.engine.objects import Hitbox
@@ -46,6 +47,16 @@ def script_fabric_method(type_ : str, params : ScriptParams) -> Script:
             return MusicPlayer(params)
         case 'ChangeLevel':
             return ChangeLevel(params)
+        case 'LivesControl':
+            return LivesControl(params)
+        case 'TeleportObject':
+            return TeleportObject(params)
+        case 'DeadZone':
+            return DeadZone(params)
+        case 'NpcMoveRightScript':
+            return NpcMoveRightScript(params)
+        case 'NpcMoveLeftScript':
+            return NpcMoveLeftScript(params)
         case _:
             return Script(params)
 
@@ -1173,6 +1184,373 @@ class ChangeLevel(Script):
 
     def update(self, dt: float) -> None:
         pass
+
+
+class LivesControlInfoParams(ScriptInfoParams):
+    def __init__(self, player_id : int, change_level_script_id : int, move_block_script_id : int, mov_sys_id : int, death_sound : str, fall_sound : str,death_time : float, enabled : bool = False):
+        super().__init__()
+        self.enabled = enabled
+        self.type = 'LivesControl'
+
+        self.systems['sound_engine'] = True
+        self.systems['ui'] = True
+        self.systems['animation_engine'] = True
+
+        self.scripts = [change_level_script_id, move_block_script_id, mov_sys_id]
+        self.objects = [player_id]
+
+        self.other['death_sound'] = death_sound
+        self.other['fall_sound'] = fall_sound
+        self.other['death_time'] = death_time
+
+class LivesControl(CommandScript):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.ui = params['systems']['ui']
+        self.sound_engine = params['systems']['sound_engine']
+        self.animation_engine = params['systems']['animation_engine']
+
+        self.change_level = params['scripts'][0]
+        self.block_move_script = params['scripts'][1]
+        self.movement_system = params['scripts'][2]
+
+        self.player = params['objects'][0]
+
+        self.death_sound = params['other']['death_sound']
+        self.death_time = params['other']['death_time']
+        self.fall_sound = params['other']['fall_sound']
+
+        self.delay = 0
+        self.is_dead = False
+        self.lay = False
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def on_execute(self, dt : float, press : bool = False,hold : bool = False, release : bool = False) -> None:
+        if self.is_dead:
+            if self.delay>self.death_time:
+                if press:
+                    self.change_level.need_switch = True
+
+                if release:
+                    self.change_level.need_switch = True
+
+                if hold:
+                    pass
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        if self.player.lives < 1 and not self.is_dead:
+            self.is_dead = True
+            self.dead()
+
+        if self.is_dead:
+            self.delay += dt
+
+        if self.delay > self.death_time*4/5 and not self.lay:
+            #self.animation_engine.upgradable_objects.remove(self.player)
+            self.animation_engine.switch_anim(self.player, 'death_lay')
+            self.lay = True
+
+
+    def dead(self):
+        self.movement_system.stop()
+        if self.movement_system.is_falling:
+            self.sound_engine.stop_sound(self.fall_sound)
+        self.block_move_script.need_switch = True
+        self.animation_engine.switch_anim(self.player, 'death')
+        self.sound_engine.play_sound(self.death_sound)
+        self.ui.switch_mode('death_screen')
+
+
+class TeleportObjectInfoParams(ScriptInfoParams):
+    def __init__(self, target_id : int, pos : tuple[float,float] , enabled : bool = False):
+        super().__init__()
+        self.type = "TeleportObject"
+        self.enabled =  enabled
+        self.objects = [target_id]
+        self.other['pos'] = pos
+
+class TeleportObject(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.target = params['objects'][0]
+
+        self.pos = params['other']['pos']
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+        self.target.move_to(pos= self.pos)
+
+    def update(self, dt: float) -> None:
+        pass
+
+
+class DeadZoneInfoParams(ScriptInfoParams):
+    def __init__(self, zone_pos : tuple[float,float], zone_size : tuple[int,int], target_obj_id : int, enabled : bool = True):
+        super().__init__()
+        self.enabled = enabled
+        self.type = "DeadZone"
+
+        self.objects = [target_obj_id]
+
+        self.other['zone_pos'] = zone_pos
+        self.other['zone_size'] = zone_size
+
+class DeadZone(Script):
+    def __init__(self, params: ScriptParams) -> None:
+        super().__init__(params)
+
+        self.target_obj = params['objects'][0]
+
+        other = params['other']
+        self.hitbox = Hitbox(pos = other['zone_pos'], size=other['zone_size'])
+
+        self.target_in_zone = False
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def update(self, dt: float) -> None:
+        collide = self.hitbox.is_collide(self.target_obj.hitbox)
+
+        if collide:
+            self.target_obj.lives = 0
+
+
+class NpcMoveRightInfoParams(ScriptInfoParams):
+    def __init__(self, obj_id : int, ground_acceleration : float, air_acceleration : float, max_speed : float, enabled : bool = False, anim : bool = False):
+        super().__init__()
+        self.enabled = True
+        self.type = 'NpcMoveRightScript'
+
+        self.systems['animation_engine'] = True
+
+        self.objects.append(obj_id)
+        self.other = {
+            'ground_acceleration' : ground_acceleration,
+            'air_acceleration' : air_acceleration,
+            'max_speed' : max_speed,
+            'enabled': enabled,
+            'anim' : anim
+        }
+
+class NpcMoveRightScript(Script):
+    def __init__(self, params : ScriptParams):
+        super().__init__(params)
+        self.obj = params['objects'][0]
+
+        self.animation_engine = params['systems']['animation_engine']
+
+        other = params['other']
+        self.ground_acceleration = other['ground_acceleration']
+        self.air_acceleration = other['air_acceleration']
+        self.max_speed = other['max_speed']
+        self.anim = other['anim']
+
+        self.running = False
+
+        self.first_time = not other['enabled']
+
+        self.block = False
+
+    def start(self):
+        if self.first_time:
+            self.first_time = False
+            return
+        if not self.block:
+            self.running = True
+            if self.anim:
+                self.animation_engine.switch_anim(animation_name='right',obj= self.obj)
+
+    def update(self, dt: float) -> None:
+        if self.running:
+            if self.obj.is_grounded:
+                self.obj.velocity_x = min(self.max_speed, self.obj.velocity_x + dt*self.ground_acceleration)
+            else:
+                self.obj.velocity_x = min(self.max_speed, self.obj.velocity_x + dt*self.air_acceleration)
+
+    def stop(self):
+        self.running = False
+        if self.anim:
+            self.animation_engine.switch_anim(animation_name='normal', obj=self.obj)
+
+    def destroy(self) -> None:
+        self.kill = True
+
+
+class NpcMoveLeftInfoParams(ScriptInfoParams):
+    def __init__(self, obj_id : int, ground_acceleration : float, air_acceleration : float, max_speed : float, enabled : bool = False, anim : bool = False):
+        super().__init__()
+        self.enabled = True
+        self.type = 'NpcMoveLeftScript'
+
+        self.systems['animation_engine'] = True
+
+        self.objects.append(obj_id)
+        self.other = {
+            'ground_acceleration' : ground_acceleration,
+            'air_acceleration' : air_acceleration,
+            'max_speed' : max_speed,
+            'enabled': enabled,
+            'anim' : anim
+        }
+
+class NpcMoveLeftScript(Script):
+    def __init__(self, params : ScriptParams):
+        super().__init__(params)
+        self.obj = params['objects'][0]
+
+        self.animation_engine = params['systems']['animation_engine']
+
+        other = params['other']
+        self.ground_acceleration = other['ground_acceleration']
+        self.air_acceleration = other['air_acceleration']
+        self.max_speed = other['max_speed']
+        self.anim = other['anim']
+
+        self.running = False
+
+        self.first_time = not other['enabled']
+
+        self.block = False
+
+    def start(self):
+        if self.first_time:
+            self.first_time = False
+            return
+        if not self.block:
+            self.running = True
+            if self.anim:
+                self.animation_engine.switch_anim(animation_name='left',obj= self.obj)
+
+    def update(self, dt: float) -> None:
+        if self.running:
+            if self.obj.is_grounded:
+                self.obj.velocity_x = max(-self.max_speed, self.obj.velocity_x - dt * self.ground_acceleration)
+            else:
+                self.obj.velocity_x = max(-self.max_speed, self.obj.velocity_x - dt * self.air_acceleration)
+
+    def stop(self):
+        self.running = False
+        if self.anim:
+            self.animation_engine.switch_anim(animation_name='normal', obj=self.obj)
+
+    def destroy(self) -> None:
+        self.kill = True
+
+
+class RandomSoundInfoParams(ScriptInfoParams):
+    def __init__(self, npc_id: int, sound_names: list[str],
+                 min_delay: float, max_delay: float,
+                 min_silence: float, max_silence: float,
+                 volume: float = 1.0, enabled: bool = True):
+        super().__init__()
+        self.type = "RandomSound"
+        self.enabled = enabled
+        self.objects.append(npc_id)
+        self.systems['sound_engine'] = True
+
+        self.other = {
+            'sound_names': sound_names,
+            'min_delay': min_delay,
+            'max_delay': max_delay,
+            'min_silence': min_silence,
+            'max_silence': max_silence,
+            'volume': volume
+        }
+
+class RandomSoundScript(Script):
+    def __init__(self, params: ScriptParams):
+        super().__init__(params)
+        self.npc = params['objects'][0]
+        self.sound_engine = params['systems']['sound_engine']
+
+        other = params['other']
+        self.sound_names = other['sound_names']
+        self.min_delay = other['min_delay']
+        self.max_delay = other['max_delay']
+        self.min_silence = other['min_silence']
+        self.max_silence = other['max_silence']
+        self.volume = other['volume']
+
+        self.next_sound_time = 0
+        self.silence_period = False
+        self.silence_end_time = 0
+        self.current_delay = 0
+
+    def start(self) -> None:
+        self.enabled = True
+        self.reset_timers()
+
+    def reset_timers(self):
+        self.current_delay = random.uniform(self.min_delay, self.max_delay)
+        self.next_sound_time = 0
+        self.silence_period = False
+        self.silence_end_time = 0
+
+    def update(self, dt: float) -> None:
+        if not self.enabled or not self.npc.is_active:
+            return
+
+        current_time = pygame.time.get_ticks() / 1000
+
+        if self.silence_period:
+            if current_time >= self.silence_end_time:
+                self.silence_period = False
+
+                self.current_delay = random.uniform(self.min_delay, self.max_delay)
+                self.next_sound_time = current_time + self.current_delay
+            return
+
+        if self.next_sound_time == 0:
+            self.next_sound_time = current_time + self.current_delay
+
+        if current_time >= self.next_sound_time:
+            self.play_random_sound()
+
+            self.silence_period = True
+            silence_duration = random.uniform(self.min_silence, self.max_silence)
+            self.silence_end_time = current_time + silence_duration
+            self.next_sound_time = 0
+
+    def play_random_sound(self):
+        if not self.sound_names:
+            return
+
+        sound_name = random.choice(self.sound_names)
+        self.sound_engine.play_sound(
+            name=sound_name,
+            volume=self.volume,
+            position=(self.npc.x, self.npc.y)
+        )
+
+    def stop(self) -> None:
+        self.enabled = False
+        self.reset_timers()
+
+    def destroy(self) -> None:
+        self.kill = True
 
 #
 # layer_system

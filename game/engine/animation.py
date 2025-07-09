@@ -2,6 +2,8 @@ import pygame
 from game.engine.objects import StaticObject, HitboxParams
 from game.engine.render import ActivityManager
 
+ANIMATION_DISABLED = -100
+
 class Animation:
     def __init__(self, frames : list[tuple[pygame.Surface, HitboxParams]], delay : float):
         self.frames : list[tuple[pygame.Surface, HitboxParams]] = frames
@@ -37,7 +39,7 @@ class AnimationEngine:
             )
 
         container = AnimationContainer()
-        container.all_animations['normal'] = Animation(frames = [(sprite, hb_params)], delay= -100)
+        container.all_animations['normal'] = Animation(frames = [(sprite, hb_params)], delay= ANIMATION_DISABLED)
 
         self.containers[obj] = container
 
@@ -55,7 +57,15 @@ class AnimationEngine:
         container.all_animations[animation_name] = Animation(frames_list,anim_delay)
 
     def switch_anim(self, obj: StaticObject, animation_name: str, play_now: bool = False, cycle: bool = True):
+        if not self.containers.get(obj):
+            print("[animation_engine] obj not found")
+            return
+
         container = self.containers[obj]
+        if not container.all_animations.get(animation_name):
+            print("[animation_engine] anim not found")
+            return
+
         container.cycled = cycle
         container.current_animation = container.all_animations[animation_name]
         container.current_delay = 0
@@ -88,7 +98,7 @@ class AnimationEngine:
             anim = container.current_animation
 
             if anim.delay < 0:
-                if anim.delay == -100:
+                if anim.delay == ANIMATION_DISABLED:
                     obj_to_remove.append(obj)
                 continue
 

@@ -16,7 +16,7 @@ from game.engine.script_system import ScriptingSystem, ScriptParams, ScriptInfoP
 from game.engine.sound import SoundEngine
 from game.subsystems.scripts import script_fabric_method
 from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
-from game.subsystems.ui import UI
+from game.subsystems.ui import UI, Mode
 
 
 class GameEncoder(json.JSONEncoder):
@@ -344,8 +344,9 @@ class Level:
         self.scripts = data.get('scripts', [])
         self.binds = data.get('binds', [])
 
+
 class Game:
-    def __init__(self, screen : pygame.Surface, screen_size : tuple[int,int], clock : pygame.time.Clock, max_fps : int = 0):
+    def __init__(self, screen : pygame.Surface, screen_size : tuple[int,int], clock : pygame.time.Clock, max_fps : int = 0, sound_volume : float = 0.2, music_volume : float = 0.2):
         self.screen : pygame.Surface = screen
         self.screen_size : tuple[int,int] = screen_size
         self.max_fps : int = max_fps
@@ -379,6 +380,9 @@ class Game:
         self.change_level = (False, 0)
         self.pause = False
 
+        self.sound_volume = sound_volume
+        self.music_volume = music_volume
+
     def load_level(self, level : Level, num : int):
         self.change_level = (False, num)
 
@@ -389,6 +393,7 @@ class Game:
         self.physic_engine = PhysicEngine(g = level.g)
         self.animation_engine = AnimationEngine()
         self.sound_engine = SoundEngine()
+
         self.script_system = ScriptingSystem()
 
         self._load_sprites(level)
@@ -400,6 +405,8 @@ class Game:
         for layer_id in sorted(self.layers.keys()):
             self.layer_system.layers.append(self.layers[layer_id])
 
+        self._load_ui()
+
         self._load_cam_boxes(level)
 
         self._load_animations(level)
@@ -410,7 +417,14 @@ class Game:
 
         self._load_binds(level)
 
-        self._load_ui()
+        self.set_sound_volume(self.sound_volume)
+        self.set_music_volume(self.music_volume)
+
+    def set_sound_volume(self, sound_volume : float):
+        self.sound_engine.set_sound_volume(sound_volume)
+
+    def set_music_volume(self, sound_volume : float):
+        self.sound_engine.set_music_volume(sound_volume)
 
     def _load_sprites(self, level : Level):
         for data in level.sprites:
@@ -490,7 +504,7 @@ class Game:
                 hitboxes = [self.sprites[id_][1] for id_ in anim_data['frames']]
                 frames_list = [(frames[i],hitboxes[i]) for i in range(len(frames))]
             else:
-                frames_list = [(item, None) for item in frames]
+                frames_list = [(frames[i], None) for i in range(len(frames))]
 
 
             self.animation_engine.add_anim(obj= obj, animation_name= anim_data['name'], anim_delay = anim_data['delay'], frames_list = frames_list)
@@ -537,6 +551,18 @@ class Game:
 
     def _load_ui(self):
         self.ui = UI(self.input_manager)
+
+        normal_mode = Mode(name= 'normal')
+        #todo
+        self.ui.add_mode(normal_mode)
+
+        pause_menu = Mode(name='pause_menu')
+        #todo
+        self.ui.add_mode(pause_menu)
+
+        death_mode = Mode(name='death_screen')
+        #todo
+        self.ui.add_mode(death_mode)
 
     def _object_from_data(self, class_type : str, need_hitbox : bool, info_params : Optional[StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams]) -> Optional[StaticObject, MovingObject, Player]:
         if info_params.get('sprite_id') == 0 or info_params.get('sprite_id'):
@@ -618,6 +644,7 @@ class Game:
                 'sound_engine': self.sound_engine if script_info.systems['sound_engine'] else None,
                 'input_manager': self.input_manager if script_info.systems['input_manager'] else None,
                 'script_system': self.script_system if script_info.systems['script_system'] else None,
+                'ui': self.ui if script_info.systems['ui'] else None,
                 'game' : self if script_info.systems['game'] else None
             },
 
