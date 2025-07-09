@@ -46,10 +46,14 @@ class Mode:
     def turn_on(self) -> None:
         for button_script in self.button_scripts:
             button_script.start()
+        for script in self.scripts:
+            script.start()
 
     def turn_off(self) -> None:
         for button_script in self.button_scripts:
             button_script.stop()
+        for script in self.scripts:
+            script.stop()
 
     def draw(self, screen : pygame.Surface) -> None:
         for obj in self.decorations:

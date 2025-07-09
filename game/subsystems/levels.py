@@ -17,6 +17,7 @@ from game.engine.sound import SoundEngine
 from game.subsystems.scripts import script_fabric_method
 from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
 from game.subsystems.ui import UI, Mode
+from game.subsystems.ui_scripts import LivesChecker
 
 
 class GameEncoder(json.JSONEncoder):
@@ -553,8 +554,16 @@ class Game:
         self.ui = UI(self.input_manager)
 
         normal_mode = Mode(name= 'normal')
-        #todo
-        self.ui.add_mode(normal_mode)
+
+        self.ui.script_system.add_script(
+            LivesChecker(
+                player= self.player,
+                normal_mode= normal_mode,
+                screen_size= self.screen_size,
+            )
+        )
+
+        self.ui.add_mode(mode= normal_mode)
 
         pause_menu = Mode(name='pause_menu')
         #todo
@@ -563,6 +572,8 @@ class Game:
         death_mode = Mode(name='death_screen')
         #todo
         self.ui.add_mode(death_mode)
+
+        self.ui.switch_mode(name="normal")
 
     def _object_from_data(self, class_type : str, need_hitbox : bool, info_params : Optional[StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams]) -> Optional[StaticObject, MovingObject, Player]:
         if info_params.get('sprite_id') == 0 or info_params.get('sprite_id'):
@@ -665,8 +676,10 @@ class Game:
         self.exit = False
         self.full_exit = False
 
-        dt = 0
         while not self.exit:
+            fps = self.clock.get_fps()
+            dt = 1/fps if fps != 0 else 0
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.exit = True
@@ -676,6 +689,8 @@ class Game:
             self.activity_manager.update()
 
             self.input_manager.update(dt)
+
+            self.ui.update(dt)
 
             if not self.pause:
                 self.script_system.update(dt)
@@ -690,8 +705,10 @@ class Game:
 
             self.layer_system.draw_by_camera(self.screen, self.camera)
 
+            self.ui.draw(screen = self.screen)
+
             pygame.display.update()
 
-            dt = self.clock.tick_busy_loop(self.max_fps)/1000
+            self.clock.tick_busy_loop(self.max_fps)
 
 

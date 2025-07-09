@@ -52,9 +52,12 @@ class ScriptParams(TypedDict):
 
 
 class Script(ABC):
-    def __init__(self, params: ScriptParams) -> None:
+    def __init__(self, params: ScriptParams | None) -> None:
         self.kill: bool = False
-        self.enabled = params['enabled'] if params.get('enabled') else False
+        if params:
+            self.enabled = params['enabled'] if params.get('enabled') else False
+        else:
+            self.enabled = False
 
     @abstractmethod
     def destroy(self) -> None:
@@ -74,7 +77,7 @@ class Script(ABC):
 
 
 class CommandScript(Script):
-    def __init__(self, params: ScriptParams) -> None:
+    def __init__(self, params: ScriptParams | None) -> None:
         super().__init__(params)
         
     def destroy(self) -> None:
@@ -95,7 +98,7 @@ class CommandScript(Script):
 
 class ScriptingSystem:
     def __init__(self):
-        self.scripts: List[Script] = []  # Список всех активных скриптов
+        self.scripts: List[Script] = []
 
     def add_script(self, script: Script) -> None:
         if script not in self.scripts:
@@ -123,7 +126,3 @@ class ScriptingSystem:
             if predicate(script):
                 return script
         return None
-
-    def start_script(self, script: Script) -> None:
-        if script in self.scripts:
-            script.start()

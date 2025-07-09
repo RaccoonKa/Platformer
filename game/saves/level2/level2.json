@@ -1670,7 +1670,7 @@
             "params": {
                 "pos": [
                     -50,
-                    226
+                    275
                 ],
                 "sprite_id": 0,
                 "max_speed_x": 1000,
@@ -3019,8 +3019,8 @@
                     "clock": false,
                     "other": {
                         "zone_pos": [
-                            -50,
-                            226
+                            -40,
+                            275
                         ],
                         "zone_size": [
                             1,

@@ -718,7 +718,7 @@ def create_level_2():
         physics=True,
         physics_type="Stoppable",
         params=PlayerObjectInfoParams(
-            pos=(-50, 370-94-50),
+            pos=(-50, 370-94-1),
             sprite_id=player_sprite_id,
 
             max_speed_x=1000,
@@ -1240,7 +1240,7 @@ def create_level_2():
     )
     level.add_script(
         ZoneSwitchInfoParams(
-            zone_pos = (-50, 370-94-50),
+            zone_pos = (-40, 370-94-1),
             zone_size= (1,1),
             target_obj_id= player_id,
             switcher_id = spawn_move_switcher_id,

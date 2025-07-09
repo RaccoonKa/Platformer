@@ -45,7 +45,7 @@ def main():
 
 
 if __name__ == "__main__":
-    create_level_1()
-    create_level_2()
-    create_level_3_coming_soon()
+    #create_level_1()
+    #create_level_2()
+    #create_level_3_coming_soon()
     main()
