@@ -1,12 +1,12 @@
 import pygame
 
-from game.editor.editor_scripts import ButtonScript
+from game.subsystems.ui_scripts import ButtonScript
 from game.engine.control import InputHandler
 from game.engine.objects import StaticObject
 from game.subsystems.control_commands import PressCommand, ReleaseCommand, HoldCommand
 from game.engine.script_system import Script, ScriptingSystem
 
-from game.editor.editor_objects import Button, TextObject, Text
+from game.engine.objects import Button, TextButton, TextObject, Text
 
 class Mode:
     def __init__(self, name : str):
@@ -17,10 +17,13 @@ class Mode:
         self.decorations : list[StaticObject] = list()
         self.scripts : list[Script] = list()
 
-    def add_button(self, name : Text, pos : tuple[float,float], sprite_press : pygame.Surface, sprite_unpress : pygame.Surface, script : Script, input_handler : InputHandler):
+    def add_button(self, pos : tuple[float,float], sprite_press : pygame.Surface, sprite_unpress : pygame.Surface, script : Script,  input_handler : InputHandler, name : Text = None,):
+        if name:
+            button = TextButton(pos= pos, unpressed_sprite = sprite_unpress, pressed_sprite= sprite_press, text = name)
+        else:
+            button = Button(pos= pos, unpressed_sprite = sprite_unpress, pressed_sprite= sprite_press)
 
-        button = Button(pos= pos, unpressed_sprite = sprite_unpress, pressed_sprite= sprite_press, text = name)
-        exec_script = ButtonScript(button= button,script= script, input_handler= input_handler, enabled = False)
+        exec_script = ButtonScript(button= button, script= script, input_handler= input_handler, enabled = False)
 
         input_handler.bind_mouse_button(button=pygame.BUTTON_LEFT, event_type="press", command=PressCommand(exec_script))
         input_handler.bind_mouse_button(button=pygame.BUTTON_LEFT, event_type="hold", command=HoldCommand(exec_script))

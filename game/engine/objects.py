@@ -215,6 +215,7 @@ class StaticObject(GameObject):
         self.x = pos[0]
         self.y = pos[1]
 
+
 class MovingObjectInfoParams(StaticObjectInfoParams):
     max_speed_x : float
     max_speed_y : float
@@ -413,7 +414,7 @@ class TextObject(StaticObject):
         self.text.draw_on(pos= (self.x + self.text_offset[0], self.y + self.text_offset[1]), screen= screen)
 
 
-class Button(TextObject):
+class TextButton(TextObject):
     def __init__(self, pos : tuple[float,float],text : Text, unpressed_sprite : pygame.Surface, pressed_sprite : pygame.Surface):
         super().__init__(pos = pos, sprite=unpressed_sprite, generate_hitbox= True, text = text)
         self.pressed_sprite : pygame.Surface = pressed_sprite
@@ -428,6 +429,31 @@ class Button(TextObject):
         else:
             self.sprite = self.unpressed_sprite
             self.pressed = False
+
+    def check_mouse(self, mouse_position) -> bool:
+        if  (self.hitbox.x < mouse_position[0] < self.hitbox.x+self.hitbox.size[0] and
+            self.hitbox.y < mouse_position[1] < self.hitbox.y + self.hitbox.size[1]):
+            return True
+        return False
+
+
+class Button(StaticObject):
+    def __init__(self, pos : tuple[float,float], unpressed_sprite : pygame.Surface, pressed_sprite : pygame.Surface):
+        super().__init__(pos = pos, sprite=unpressed_sprite, generate_hitbox= True)
+        self.pressed_sprite : pygame.Surface = pressed_sprite
+        self.unpressed_sprite : pygame.Surface = unpressed_sprite
+
+        self.pressed : bool = False
+
+
+    def switch_sprite(self, press : bool) -> None:
+        if press:
+            self.sprite = self.pressed_sprite
+            self.pressed = True
+        else:
+            self.sprite = self.unpressed_sprite
+            self.pressed = False
+
 
     def check_mouse(self, mouse_position) -> bool:
         if  (self.hitbox.x < mouse_position[0] < self.hitbox.x+self.hitbox.size[0] and

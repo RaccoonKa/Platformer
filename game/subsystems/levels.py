@@ -5,7 +5,7 @@ import json
 
 from typing import TypedDict, NotRequired, Optional, Any
 
-from game.engine.objects import StaticObject, MovingObject, Player, Hitbox
+from game.engine.objects import StaticObject, MovingObject, Player, Hitbox, Text, Button
 from game.engine.objects import StaticObjectParams, MovingObjectParams, PlayerObjectParams, HitboxParams
 from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams
 from game.engine.render import Camera, CameraManager, Layer, LayerSystem, ActivityManager
@@ -17,7 +17,7 @@ from game.engine.sound import SoundEngine
 from game.subsystems.scripts import script_fabric_method
 from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
 from game.subsystems.ui import UI, Mode
-from game.subsystems.ui_scripts import LivesChecker
+from game.subsystems.ui_scripts import LivesChecker, SwitchModeCommand
 
 
 class GameEncoder(json.JSONEncoder):
@@ -553,25 +553,108 @@ class Game:
     def _load_ui(self):
         self.ui = UI(self.input_manager)
 
-        normal_mode = Mode(name= 'normal')
 
-        self.ui.script_system.add_script(
-            LivesChecker(
-                player= self.player,
-                normal_mode= normal_mode,
-                screen_size= self.screen_size,
-            )
+
+        normal_mode = Mode(name= 'normal')
+        pause_menu = Mode(name='pause_menu')
+        death_mode = Mode(name='death_screen')
+
+
+        #normal
+        live_checker = LivesChecker(
+            player= self.player,
+            normal_mode= normal_mode,
+            screen_size= self.screen_size
         )
 
+        self.ui.script_system.add_script(live_checker)
+
+        normal_mode.scripts.append(live_checker)
+
+
+
+
+        #pause
+        b_b_sprite = pygame.image.load("assets/pictures/game/background_game/darkness.png")
+        b_b_sprite.convert_alpha()
+
+        black_box = StaticObject(
+            pos = (0,0),
+            sprite= b_b_sprite
+        )
+
+        black_box.change_size(size=self.screen_size)
+
+        pause_menu.add_decorations(
+            black_box
+        )
+
+        menu_size = (int(771*self.screen_size[0]/1920),int(823*self.screen_size[1]/1080))
+
+        menu_back_sprite = pygame.image.load("assets/pictures/game/game_menu/game_menu.png")
+        menu_back_sprite.convert_alpha()
+
+        menu_back = StaticObject(
+            pos = ((self.screen_size[0] - menu_size[0]) / 2, (self.screen_size[1] - menu_size[1]) / 2),
+            sprite = menu_back_sprite
+        )
+        menu_back.change_size(size=menu_size)
+
+        pause_menu.add_decorations(menu_back)
+
+
+
+
+
+
+        #death
+        death_mode.add_decorations(black_box)
+
+        size = (int(712*self.screen_size[0]/1920),int(415*self.screen_size[1]/1080))
+
+        message_sprite = pygame.image.load("assets/pictures/game/game_over_text/lost.png")
+        message_sprite.convert_alpha()
+
+        message = StaticObject(
+            pos=((self.screen_size[0] - size[0]) / 2, (self.screen_size[1] - size[1]) / 2),
+            sprite=message_sprite
+        )
+        message.change_size(size=size)
+
+        death_mode.add_decorations(message)
+
+
+
+        # Общий
+        to_menu_script = SwitchModeCommand(
+            ui = self.ui,
+            mode_name="pause_menu"
+        )
+
+        to_menu_command = PressCommand(
+            script= to_menu_script
+        )
+
+        self.input_manager.bind_key(key= pygame.K_ESCAPE,command= to_menu_command, event_type= "press")
+
+        #Кнопки для меню
+        sound_button_on_sprite = pygame.image.load("assets/pictures/game/game_menu/music_on.png")
+        sound_button_on_sprite.convert_alpha()
+        sound_button_off_sprite = pygame.image.load("assets/pictures/game/game_menu/music_off.png")
+        sound_button_off_sprite.convert_alpha()
+
+        # sound_button = Button(
+        #
+        # )
+
+
+
+
+
         self.ui.add_mode(mode= normal_mode)
-
-        pause_menu = Mode(name='pause_menu')
-        #todo
         self.ui.add_mode(pause_menu)
-
-        death_mode = Mode(name='death_screen')
-        #todo
         self.ui.add_mode(death_mode)
+
 
         self.ui.switch_mode(name="normal")
 

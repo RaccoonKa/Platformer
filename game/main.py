@@ -1,9 +1,9 @@
 import pygame
 
-from game.create_levels import create_level_3_coming_soon
 from game.subsystems.levels import Game, Level
 
 from create_levels import  create_level_1, create_level_2
+from game.create_levels import create_level_3_coming_soon
 
 
 def base_init():
@@ -20,7 +20,7 @@ def base_init():
     clock = pygame.time.Clock()
 
 
-    return screen_size, max_fps, screen, clock, 1, 0.1, 0.1
+    return screen_size, max_fps, screen, clock, 2, 0.1, 0.1
 
 
 def main():
