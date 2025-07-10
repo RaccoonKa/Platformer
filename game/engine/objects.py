@@ -445,7 +445,6 @@ class Button(StaticObject):
 
         self.pressed : bool = False
 
-
     def switch_sprite(self, press : bool) -> None:
         if press:
             self.sprite = self.pressed_sprite
@@ -453,7 +452,6 @@ class Button(StaticObject):
         else:
             self.sprite = self.unpressed_sprite
             self.pressed = False
-
 
     def check_mouse(self, mouse_position) -> bool:
         if  (self.hitbox.x < mouse_position[0] < self.hitbox.x+self.hitbox.size[0] and

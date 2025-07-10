@@ -98,6 +98,42 @@ class ButtonScript(CommandScript):
             self.button.switch_sprite(press = False)
 
 
+class ReleaseButtonScript(CommandScript):
+    def __init__(self, button : TextButton | Button, script : Script, input_handler : InputHandler, enabled : bool = False):
+        super().__init__(None)
+        self.enabled = enabled
+        self.button = button
+        self.script = script
+        self.input_handler = input_handler
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.enabled = True
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        pass
+
+    def on_execute(self, dt : float, press : bool = False,hold : bool = False, release : bool = False) -> None:
+        if not self.enabled:
+            return
+        if self.button.check_mouse(self.input_handler.get_mouse_position_on_screen()):
+            if press:
+                self.button.switch_sprite(press = True)
+            if hold:
+                if not self.button.pressed:
+                    self.button.switch_sprite(press = True)
+            if release:
+                self.button.switch_sprite(press = False)
+                self.script.on_execute(dt = dt, release = True)
+        else:
+            self.button.switch_sprite(press = False)
+
+
 class ToggleButtonScript(CommandScript):
     def __init__(self, button: Button | TextButton, script: Script, input_handler: InputHandler, current_state: bool,
                  enabled: bool = False):
@@ -200,18 +236,30 @@ class SwitchModeCommand(CommandScript):
 
 
 class VolumeSwitcher(Script):
-    def __init__(self, enabled : bool = False) -> None:
+    def __init__(self, sound_engine , enabled: bool = False):
         super().__init__(None)
+        self.sound_engine = sound_engine
+        self.prev_music_volume = 0.0
+        self.prev_sound_volume = 0.0
         self.enabled = enabled
 
     def destroy(self) -> None:
         self.kill = True
 
     def start(self) -> None:
-        self.enabled = True
+        if not self.enabled:
+            self.prev_music_volume = self.sound_engine.music_volume
+            self.prev_sound_volume = self.sound_engine.sound_volume
+
+            self.sound_engine.set_music_volume(0.0)
+            self.sound_engine.set_sound_volume(0.0)
+            self.enabled = True
 
     def stop(self) -> None:
-        self.enabled = False
+        if self.enabled:
+            self.sound_engine.set_music_volume(self.prev_music_volume)
+            self.sound_engine.set_sound_volume(self.prev_sound_volume)
+            self.enabled = False
 
     def update(self, dt: float) -> None:
         pass
@@ -236,3 +284,23 @@ class PrintScript(Script):
     def update(self, dt: float) -> None:
         print("example")
         self.stop()
+
+
+class ReturnToMenuScript(Script):
+    def __init__(self, game) -> None:
+        super().__init__(None)
+        self.game = game
+        self.enabled = False
+
+    def destroy(self) -> None:
+        self.kill = True
+
+    def start(self) -> None:
+        self.game.exit = True
+        self.game.change_level = (True, 0)
+
+    def stop(self) -> None:
+        self.enabled = False
+
+    def update(self, dt: float) -> None:
+        pass

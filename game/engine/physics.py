@@ -137,21 +137,20 @@ class PhysicEngine:
         min_key = min(positive_overlaps, key=positive_overlaps.get)
         #min_overlap = positive_overlaps[min_key]
 
-        if min_key == 'left':  # obj1 справа от obj2
+        if min_key == 'left':
             obj1.x = obj2.hitbox.x + obj2.hitbox.size[0]
             obj1.velocity_x = max(obj1.velocity_x, 0)
-        elif min_key == 'right':  # obj1 слева от obj2
+        elif min_key == 'right':
             obj1.x = obj2.hitbox.x - obj1.hitbox.size[0]
             obj1.velocity_x = min(obj1.velocity_x, 0)
-        elif min_key == 'top':  # obj1 под obj2
+        elif min_key == 'top':
             obj1.y = obj2.hitbox.y + obj2.hitbox.size[1]
             obj1.velocity_y = max(obj1.velocity_y, 0)
-        elif min_key == 'bottom':  # obj1 над obj2
+        elif min_key == 'bottom':
             obj1.y = obj2.hitbox.y - obj1.hitbox.size[1]
             obj1.velocity_y = min(obj1.velocity_y, 0)
             obj1.is_grounded = True
 
-            # Если obj2 двигался, перемещаем игрока вместе с ним
             if obj2 in old_positions:
                 old_x, old_y, old_hb_x, old_hb_y = old_positions[obj2]
                 dx = obj2.x - old_x

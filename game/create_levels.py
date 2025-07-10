@@ -648,8 +648,6 @@ def create_level_1()-> Level:
     return level
 
 
-
-
 def create_level_2():
     level_path = "saves/level2/level2.json"
 

@@ -5,7 +5,7 @@ import json
 
 from typing import TypedDict, NotRequired, Optional, Any
 
-from game.engine.objects import StaticObject, MovingObject, Player, Hitbox, Text, Button
+from game.engine.objects import StaticObject, MovingObject, Player, Hitbox, Button
 from game.engine.objects import StaticObjectParams, MovingObjectParams, PlayerObjectParams, HitboxParams
 from game.engine.objects import StaticObjectInfoParams, MovingObjectInfoParams, PlayerObjectInfoParams
 from game.engine.render import Camera, CameraManager, Layer, LayerSystem, ActivityManager
@@ -17,7 +17,8 @@ from game.engine.sound import SoundEngine
 from game.subsystems.scripts import script_fabric_method
 from game.subsystems.control_commands import PressCommand, HoldCommand, ReleaseCommand
 from game.subsystems.ui import UI, Mode
-from game.subsystems.ui_scripts import LivesChecker, SwitchModeCommand
+from game.subsystems.ui_scripts import LivesChecker, SwitchModeCommand, ToggleButtonScript, VolumeSwitcher, \
+    ReleaseButtonScript, ButtonScript, ReturnToMenuScript
 
 
 class GameEncoder(json.JSONEncoder):
@@ -388,7 +389,7 @@ class Game:
         self.change_level = (False, num)
 
         self.screen_size = level.screen_size
-        self.screen = pygame.display.set_mode(size=self.screen_size, vsync=self.max_fps, flags = pygame.FULLSCREEN | pygame.SCALED)
+        self.screen = pygame.display.set_mode(size=self.screen_size, flags = pygame.FULLSCREEN | pygame.SCALED)
 
         self.layer_system = LayerSystem(size = level.size, screen = self.screen)
         self.physic_engine = PhysicEngine(g = level.g)
@@ -579,11 +580,11 @@ class Game:
         b_b_sprite.convert_alpha()
 
         black_box = StaticObject(
-            pos = (0,0),
+            pos = (-1,-1),
             sprite= b_b_sprite
         )
 
-        black_box.change_size(size=self.screen_size)
+        black_box.change_size(size=(self.screen_size[0]+2,self.screen_size[1]+2))
 
         pause_menu.add_decorations(
             black_box
@@ -594,8 +595,10 @@ class Game:
         menu_back_sprite = pygame.image.load("assets/pictures/game/game_menu/game_menu.png")
         menu_back_sprite.convert_alpha()
 
+        menu_back_pos =((self.screen_size[0] - menu_size[0]) / 2, (self.screen_size[1] - menu_size[1]) / 2)
+
         menu_back = StaticObject(
-            pos = ((self.screen_size[0] - menu_size[0]) / 2, (self.screen_size[1] - menu_size[1]) / 2),
+            pos = menu_back_pos,
             sprite = menu_back_sprite
         )
         menu_back.change_size(size=menu_size)
@@ -637,17 +640,145 @@ class Game:
 
         self.input_manager.bind_key(key= pygame.K_ESCAPE,command= to_menu_command, event_type= "press")
 
+
+
+
+
+
+
         #Кнопки для меню
-        sound_button_on_sprite = pygame.image.load("assets/pictures/game/game_menu/music_on.png")
+
+        #sound_button
+        sound_button_size = (int(200*self.screen_size[0]/1920),int(200*self.screen_size[1]/1080))
+
+        sound_button_on_sprite = pygame.transform.scale(pygame.image.load("assets/pictures/game/game_menu/music_on.png"), sound_button_size)
         sound_button_on_sprite.convert_alpha()
-        sound_button_off_sprite = pygame.image.load("assets/pictures/game/game_menu/music_off.png")
+        sound_button_off_sprite = pygame.transform.scale(pygame.image.load("assets/pictures/game/game_menu/music_off.png"), sound_button_size)
         sound_button_off_sprite.convert_alpha()
 
-        # sound_button = Button(
-        #
-        # )
+        sound_button = Button(
+            pos = (menu_back_pos[0]+int(40*self.screen_size[0]/1920), menu_back_pos[1]+menu_size[1] - int(60*self.screen_size[1]/1920) - sound_button_size[1]),
+            unpressed_sprite= sound_button_on_sprite,
+            pressed_sprite= sound_button_off_sprite
+        )
+
+        pause_menu.buttons.append(sound_button)
+
+        sound_script = VolumeSwitcher(
+            self.sound_engine,
+            enabled= False
+        )
+
+        sound_button_script = ToggleButtonScript(
+            button = sound_button,
+            script = sound_script,
+            input_handler = self.input_manager,
+            current_state = self.sound_engine.sound_volume == 0 and self.sound_engine.music_volume == 0
+        )
+
+        sound_command = PressCommand(script= sound_button_script)
+
+        pause_menu.button_scripts.append(sound_button_script)
+
+        self.ui.input_handler.bind_mouse_button(button= pygame.BUTTON_LEFT,command= sound_command, event_type= "press")
+
+        self.ui.script_system.add_script(sound_script)
 
 
+
+        #continue button
+
+        mid_button_size = (int(469*self.screen_size[0]/1920),int(101*self.screen_size[1]/1080))
+
+        continue_button_on_sprite = pygame.transform.scale(pygame.image.load("assets/pictures/game/game_menu/continue.png"), mid_button_size)
+        continue_button_on_sprite.convert_alpha()
+        continue_button_off_sprite = pygame.transform.scale(pygame.image.load("assets/pictures/game/game_menu/continue_choose.png"), mid_button_size)
+        continue_button_off_sprite.convert_alpha()
+
+        continue_button = Button(
+            pos = ((self.screen_size[0] - mid_button_size[0]) / 2, menu_back_pos[1] + int((400+25)*self.screen_size[1]/1920)),
+            pressed_sprite= continue_button_on_sprite,
+            unpressed_sprite= continue_button_off_sprite
+        )
+
+        continue_button_script = ReleaseButtonScript(
+            button = continue_button,
+            script= to_menu_script,
+            input_handler= self.ui.input_handler
+        )
+
+        self.ui.input_handler.bind_mouse_button(
+            button=pygame.BUTTON_LEFT,
+            command=ReleaseCommand(
+                script=continue_button_script
+            ),
+            event_type='release')
+        self.ui.input_handler.bind_mouse_button(
+            button= pygame.BUTTON_LEFT,
+            command= HoldCommand(
+                script=continue_button_script
+            ),
+            event_type='hold')
+        self.ui.input_handler.bind_mouse_button(
+            button=pygame.BUTTON_LEFT,
+            command=PressCommand(
+                script=continue_button_script
+            ),
+            event_type='press')
+
+        pause_menu.buttons.append(continue_button)
+        pause_menu.button_scripts.append(continue_button_script)
+
+
+
+
+
+
+        #exit to main menu button
+
+        mm_button_on_sprite = pygame.transform.scale(pygame.image.load("assets/pictures/game/game_menu/menu.png"), mid_button_size)
+        mm_button_on_sprite.convert_alpha()
+        mm_button_off_sprite = pygame.transform.scale(pygame.image.load("assets/pictures/game/game_menu/menu_choose.png"), mid_button_size)
+        mm_button_off_sprite.convert_alpha()
+
+        mm_button = Button(
+            pos=(
+            (self.screen_size[0] - mid_button_size[0]) / 2, menu_back_pos[1] + int((25 + 50 + 400 + 250) * self.screen_size[1] / 1920)),
+            pressed_sprite=mm_button_on_sprite,
+            unpressed_sprite=mm_button_off_sprite
+        )
+
+        to_main_menu_script = ReturnToMenuScript(
+            game= self
+        )
+
+        mm_button_script = ButtonScript(
+            button=mm_button,
+            script= to_main_menu_script,
+            input_handler=self.ui.input_handler
+        )
+
+        self.ui.input_handler.bind_mouse_button(
+            button=pygame.BUTTON_LEFT,
+            command=ReleaseCommand(
+                script=mm_button_script
+            ),
+            event_type='release')
+        self.ui.input_handler.bind_mouse_button(
+            button=pygame.BUTTON_LEFT,
+            command=HoldCommand(
+                script=mm_button_script
+            ),
+            event_type='hold')
+        self.ui.input_handler.bind_mouse_button(
+            button=pygame.BUTTON_LEFT,
+            command=PressCommand(
+                script=mm_button_script
+            ),
+            event_type='press')
+
+        pause_menu.buttons.append(mm_button)
+        pause_menu.button_scripts.append(mm_button_script)
 
 
 
@@ -793,5 +924,3 @@ class Game:
             pygame.display.update()
 
             self.clock.tick_busy_loop(self.max_fps)
-
-

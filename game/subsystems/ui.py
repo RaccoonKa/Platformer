@@ -1,6 +1,6 @@
 import pygame
 
-from game.subsystems.ui_scripts import ButtonScript
+from game.subsystems.ui_scripts import ButtonScript, ToggleButtonScript
 from game.engine.control import InputHandler
 from game.engine.objects import StaticObject
 from game.subsystems.control_commands import PressCommand, ReleaseCommand, HoldCommand
@@ -12,7 +12,7 @@ class Mode:
     def __init__(self, name : str):
         self.name : str = name
         self.buttons : list[Button] = list()
-        self.button_scripts : list[ButtonScript] = list()
+        self.button_scripts : list[ButtonScript | ToggleButtonScript] = list()
         self.texts : list[TextObject] = list()
         self.decorations : list[StaticObject] = list()
         self.scripts : list[Script] = list()
