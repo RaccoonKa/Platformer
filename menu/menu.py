@@ -47,9 +47,9 @@ menu_fade_speed = 5
 objects_manager = Objects()
 setup_secrets(objects_manager, GAME_WIDTH, GAME_HEIGHT)
 sound_volume = 0.5
-switch_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/switch.mp3")
+switch_sound = pygame.mixer.Sound("assets/audio/menu/navigation/switch.mp3")
 switch_sound.set_volume(sound_volume)
-select_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/select.mp3")
+select_sound = pygame.mixer.Sound("assets/audio/menu/navigation/select.mp3")
 select_sound.set_volume(sound_volume)
 
 # Launch
@@ -85,21 +85,21 @@ selected_game_start_index = -1
 # For GAME START
 current_image_index = 0
 game_images = []
-dark_image_path = "assets(menu)/pictures/comic/dark.jpg"
+dark_image_path = "assets/pictures/menu/comic/dark.jpg"
 game_images_paths = [
-    "assets(menu)/pictures/comic/comic1.png",
-    "assets(menu)/pictures/comic/comic2.png"
+    "assets/pictures/menu/comic/comic1.png",
+    "assets/pictures/menu/comic/comic2.png"
 ]
 comic_positions = adjust_comic_position(GAME_WIDTH, GAME_HEIGHT)
 
-comic_music = pygame.mixer.Sound("assets(menu)/audio/comic/comic1.mp3")
+comic_music = pygame.mixer.Sound("assets/audio/menu/voice/COMIC_DIALOG/comic1.mp3")
 comic_music.set_volume(sound_volume)
-comic2_music = pygame.mixer.Sound("assets(menu)/audio/comic/comic2.mp3")
+comic2_music = pygame.mixer.Sound("assets/audio/menu/rules/comic2.mp3")
 comic2_music.set_volume(sound_volume)
 current_comic_music = None
 
 #Glith effect
-glitch_sound = pygame.mixer.Sound("assets(menu)/audio/navigation/glitch.mp3")
+glitch_sound = pygame.mixer.Sound("assets/audio/menu/navigation/glitch.mp3")
 glitch_sound.set_volume(sound_volume)
 intro_text, intro_text_rect = create_game_intro_text(GAME_WIDTH, GAME_HEIGHT)
 intro_text_alpha = 0

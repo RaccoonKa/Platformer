@@ -7,8 +7,8 @@ class Music:
     def __init__(self):
         pygame.mixer.init()
         self.tracks = [
-            "assets(menu)/audio/main_music/town.mp3",
-            "assets(menu)/audio/main_music/shadow.mp3"
+            "assets/audio/menu/main_music/town.mp3",
+            "assets/audio/menu/main_music/shadow.mp3"
         ]
         self.current_index = 0
         self.volume = 0.5

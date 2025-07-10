@@ -4,9 +4,9 @@ import pygame
 class CoffeeEffect:
     def __init__(self, GAME_WIDTH, GAME_HEIGHT):
         self.images = [
-            pygame.image.load("assets(menu)/pictures/secrets/coffee/0.png").convert_alpha(),
-            pygame.image.load("assets(menu)/pictures/secrets/coffee/1.png").convert_alpha(),
-            pygame.image.load("assets(menu)/pictures/secrets/coffee/2.png").convert_alpha()
+            pygame.image.load("assets/pictures/menu/secrets/coffee/0.png").convert_alpha(),
+            pygame.image.load("assets/pictures/menu/secrets/coffee/1.png").convert_alpha(),
+            pygame.image.load("assets/pictures/menu/secrets/coffee/2.png").convert_alpha()
         ]
         self.original_images = [img.copy() for img in self.images]
         self.current_index = -1

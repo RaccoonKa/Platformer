@@ -6,7 +6,7 @@ import os
 
 # Change Background
 class Background:
-    def __init__(self, screen, image_paths = None, folder_path="assets(menu)/pictures/background", change_interval = 1.0):
+    def __init__(self, screen, image_paths = None, folder_path="assets/pictures/menu/background_menu", change_interval = 1.0):
         self.screen = screen
         self.change_interval = change_interval
         self.backgrounds = []

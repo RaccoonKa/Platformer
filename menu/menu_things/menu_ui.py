@@ -7,11 +7,11 @@ from menu_classes.menu_music import Slider
 
 def create_intro(screen):
     animator = FadeAnimation(screen)
-    intro = pygame.image.load("assets(menu)/pictures/intro/intro.png").convert_alpha()
+    intro = pygame.image.load("assets/pictures/menu/intro/intro.png").convert_alpha()
     intro = pygame.transform.scale(intro, (600, 600))
-    animator.fade_in(intro, duration = 0)
-    pygame.time.delay(0)
-    animator.fade_out(intro, duration = 0)
+    animator.fade_in(intro, duration = 4)
+    pygame.time.delay(3000)
+    animator.fade_out(intro, duration = 4)
 
     return animator
 
@@ -19,7 +19,7 @@ def create_intro(screen):
 def create_background_manager(screen):
     return DynamicBackgroundManager(
         screen,
-        folder_path = "assets(menu)/pictures/background",
+        folder_path = "assets/pictures/menu/background_menu",
         prefix = "bg",
         start = 0,
         end = 78,
@@ -31,7 +31,7 @@ def create_main_menu_elements(game_width, game_height):
     title = Text(
         text = "THE FOG",
         position = (game_width // 2.85 - 25, 250),
-        font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
+        font_path = "assets/fonts/Boom/boom-boom-8-bit.colr_.ttf",
         font_size = 80,
         color = (255, 255, 255),
         alpha = 255,
@@ -40,7 +40,7 @@ def create_main_menu_elements(game_width, game_height):
     press_any_button = Text(
         text = "press any button",
         position = (game_width // 2.8, 420),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_path = "assets/fonts/GNF/GNF.ttf",
         font_size = 30,
         color = (255, 255, 255),
         alpha = 255,
@@ -50,25 +50,25 @@ def create_main_menu_elements(game_width, game_height):
         MenuItem(
             text = "Start",
             position = (game_width // 2.5 - 10, game_height // 5.2),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 45
         ),
         MenuItem(
             text = "Settings",
             position = (game_width // 2.5 - 42, game_height // 3.9),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 45
         ),
         MenuItem(
             text = "Authors",
             position = (game_width // 2.5 - 40, game_height // 3.13),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 45
         ),
         MenuItem(
             text = "Exit",
             position = (game_width // 2.5 + 5, game_height // 2.6),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 45
         )
     ]
@@ -80,7 +80,7 @@ def create_settings_elements(game_width, game_height, music):
     settings_title = Text(
         text = "SETTINGS",
         position = (game_width // 1.7 - 10, game_height // 15),
-        font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
+        font_path = "assets/fonts/Boom/boom-boom-8-bit.colr_.ttf",
         font_size = 50
     )
 
@@ -93,7 +93,7 @@ def create_settings_elements(game_width, game_height, music):
         max_val = 1.0,
         initial_val = music.volume,
         label = "Music",
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_path = "assets/fonts/GNF/GNF.ttf",
         font_size = 25
     )
 
@@ -106,14 +106,14 @@ def create_settings_elements(game_width, game_height, music):
         max_val = 1.0,
         initial_val = 0.5,
         label = "Sound",
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_path = "assets/fonts/GNF/GNF.ttf",
         font_size = 25
     )
 
     back_button = MenuItem(
         text = "Back",
         position = (game_width // 1.5, game_height // 2.7),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_path = "assets/fonts/GNF/GNF.ttf",
         font_size = 35,
         text_color = (255, 255, 255),
         bg_color = (50, 50, 150, 180),
@@ -127,7 +127,7 @@ def create_authors_elements(game_width, game_height):
     authors_title = Text(
         text = "AUTHORS",
         position = (game_width // 1.7 + 4, game_height // 15),
-        font_path = "assets(menu)/fonts/Boom/boom-boom-8-bit.colr_.ttf",
+        font_path = "assets/fonts/Boom/boom-boom-8-bit.colr_.ttf",
         font_size = 50
     )
 
@@ -135,56 +135,56 @@ def create_authors_elements(game_width, game_height):
         Text(
             text = "Game developed by",
             position = (game_width // 1.7 - 25, game_height // 8),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 30,
             color = (255, 255, 255)
         ),
         Text(
             text = "Svetozar Kravchuk",
             position = (game_width // 1.7 - 3, game_height // 7 + 40),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
             text = "Mark Solovyevsky",
             position = (game_width // 1.7 + 5, game_height // 7 + 80),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
             text = "Special thanks to",
             position = (game_width // 1.7 - 15, game_height // 4 + 15),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 30,
             color = (255, 255, 255)
         ),
         Text(
             text = "Dmitry Rozhkov",
             position = (game_width // 1.7 + 25, game_height // 3.2 - 10),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
             text = "Artemy Skvortsov",
             position = (game_width // 1.7 + 10, game_height // 3 - 8),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
             text = "Alexander Sobolevsky",
             position = (game_width // 1.7 - 20, game_height // 2.9 + 7),
-            font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+            font_path = "assets/fonts/GNF/GNF.ttf",
             font_size = 25,
             color = (255, 255, 255)
         ),
         Text(
             text="Philip Kudashev",
             position=(game_width // 1.65 - 15, game_height // 2.65),
-            font_path="assets(menu)/fonts/GNF/GNF.ttf",
+            font_path="assets/fonts/GNF/GNF.ttf",
             font_size=25,
             color=(255, 255, 255)
         )
@@ -193,7 +193,7 @@ def create_authors_elements(game_width, game_height):
     authors_back_button = MenuItem(
         text = "Back",
         position = (game_width // 1.5, game_height // 2.4),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_path = "assets/fonts/GNF/GNF.ttf",
         font_size = 35,
         text_color = (255, 255, 255),
         bg_color = (50, 50, 150, 180),
@@ -207,7 +207,7 @@ def create_game_start_elements(game_width, game_height):
     next_button = MenuItem(
         text = "NEXT",
         position = (game_width // 1.1, game_height // 1.1),
-        font_path = "assets(menu)/fonts/GNF/GNF.ttf",
+        font_path = "assets/fonts/GNF/GNF.ttf",
         font_size = 35,
         text_color = (255, 255, 255),
         bg_color = (50, 50, 150, 180),
@@ -216,7 +216,7 @@ def create_game_start_elements(game_width, game_height):
     return next_button
 
 def create_game_intro_text(game_width, game_height):
-    font = pygame.font.Font("assets(menu)/fonts/Epilepsy Sans/EpilepsySans.ttf", 35)
+    font = pygame.font.Font("assets/fonts/Epilepsy Sans/EpilepsySans.ttf", 35)
     intro_text = font.render("Жизнь — это испытание, это подготовка и анализ, но большинство просто приспосабливается и тонет в рутине", True, (255, 255, 255))
     intro_text.set_alpha(0)
     text_rect = intro_text.get_rect(center=(game_width // 2, game_height // 2))

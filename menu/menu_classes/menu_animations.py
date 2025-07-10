@@ -75,7 +75,7 @@ class GlitchEffect:
         return frames
 
     def update(self):
-        elapsed = (pygame.time.get_ticks() - self.start_time) / 2000
+        elapsed = (pygame.time.get_ticks() - self.start_time) / 2100
         progress = min(elapsed / self.duration, 1.0)
         frame_index = int(progress * len(self.glitch_frames) * 2) % len(self.glitch_frames)
         return self.glitch_frames[frame_index], progress >= 1.0
